@@ -1,18 +1,13 @@
-﻿
+﻿using Microsoft.Playwright;
+using System.Runtime.InteropServices;
 
-using Microsoft.Playwright;
-
-// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
-
-
-
-
-using var playwright = await Playwright.CreateAsync();
-await using var browser = await playwright.Chromium.LaunchAsync();
-var page = await browser.NewPageAsync();
-await page.GotoAsync("https://playwright.dev/dotnet");
-await page.ScreenshotAsync(new()
+class Program
 {
-    Path = "screenshot.png"
-});
+    static async Task Main(string[] args)
+    {
+        PlaywrightTest.Crawler crawler = new PlaywrightTest.Crawler();
+        var x = crawler.Crawl();
+        await x;
+    }
+}
+
