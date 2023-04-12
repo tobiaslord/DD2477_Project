@@ -1,9 +1,15 @@
 namespace SimpleBookNamespace
 {
-    class SimpleBook
+    public class SimpleBook
     {
-        public string Title { get; set; }
-        public string Author { get; set; }
-        public string Genre { get; set; }
+        public int bookId { get; set; }
+        public string author { get; set; }
+        public string title { get; set; }
+        public string description { get; set; }
+        public string imageUrl { get; set; }
+        public float rating { get; set; }
+        public int ratingCount { get; set; }
+        public int reviewCount { get; set; }
+        public List<string> genres { get; set; }
     }
 }
