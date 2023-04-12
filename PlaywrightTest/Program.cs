@@ -23,7 +23,7 @@ class Program
         Elastic es = new Elastic();
         es.IndexDocument(book, "test");
         es.Search("novel");
-        // PlaywrightTest.Crawler crawler = new PlaywrightTest.Crawler();
-        // await crawler.CrawlTest(120, 15);
+        PlaywrightTest.Crawler crawler = new PlaywrightTest.Crawler();
+        await crawler.CrawlTest(120, 15);
     }
 }
