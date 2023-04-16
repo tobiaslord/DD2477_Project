@@ -64,7 +64,7 @@ namespace ElasticSearchNamespace
             var documents = searchResponse.Documents.ToList();
             foreach (var document in documents)
             {
-                Console.WriteLine($"Book ID: {document.bookId}");
+                Console.WriteLine($"Book ID: {document.id}");
                 Console.WriteLine($"Title: {document.title}");
                 Console.WriteLine($"Description: {document.description}");
                 Console.WriteLine($"Image URL: {document.imageUrl}");
@@ -82,7 +82,4 @@ namespace ElasticSearchNamespace
         }
 
     }
-    
 }
-
-

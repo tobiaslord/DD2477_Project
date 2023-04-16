@@ -1,16 +1,19 @@
 using Microsoft.Playwright;
+using SimpleBookNamespace;
 using System.Linq;
 
 class BookPage {
     private IPage page;
     private string bookId = string.Empty;
-    public string title = string.Empty;
-    public string description = string.Empty;
-    public string imageUrl = string.Empty;
-    public string rating = string.Empty;
-    public string ratingCount = string.Empty;
-    public string reviewCount = string.Empty;
-    public List<string> genres = new List<string>();
+    private string title = string.Empty;
+    private string description = string.Empty;
+    private string imageUrl = string.Empty;
+    private List<string> authorUrls = new List<string>();
+    private string rating = string.Empty;
+    private string ratingCount = string.Empty;
+    private string reviewCount = string.Empty;
+    private List<string> genres = new List<string>();
+    private List<string> authors = new List<string>();
     public BookPage(IPage page, string id) {
         this.page = page;
         this.bookId = id;
@@ -21,12 +24,27 @@ class BookPage {
             Task.WaitAll(new Task[] {
                 this.SetDescription(),
                 this.SetGenres(),
+                this.SetAuthors(),
+                this.SetAuthorUrls(),
                 this.SetImageUrl(),
                 this.SetRating(),
                 this.SetRatingCount(),
                 this.SetReviewCount(),
             });
         }
+    }
+    public async Task<bool> IsErrorPage() {
+        var error = page.Locator(".leftContainer.mediumText h1");
+        if (await error.IsVisibleAsync()) {
+            var errorText = await error.InnerTextAsync();
+            if (errorText == "page unavailable") {
+                return true;
+            }
+        }
+        return false;
+    }
+    public bool BookExists() {
+        return !string.IsNullOrEmpty(this.title);
     }
     private async Task LoadPage() {
         await page.GotoAsync($"https://www.goodreads.com/book/show/{this.bookId}");
@@ -51,7 +69,7 @@ class BookPage {
             this.title = await title.InnerTextAsync();
             return true;
         }
-        this.title = "Error for id: " + this.bookId;
+        // this.title = "Error for id: " + this.bookId;
         return false;
     }
 
@@ -80,10 +98,29 @@ class BookPage {
         this.reviewCount = await reviewCount.InnerTextAsync();
     }
 
+    private async Task SetAuthors() {
+        var authors = page.Locator(".ContributorLinksList .ContributorLink__name");
+        var els = await authors.ElementHandlesAsync();
+        foreach (var item in els) {
+            string author = await item.InnerTextAsync();
+            this.authors.Add(author);
+        }
+    }
+
+    private async Task SetAuthorUrls() {
+        var authors = page.Locator(".ContributorLinksList .ContributorLink");
+        var els = await authors.ElementHandlesAsync();
+        foreach (var item in els) {
+            string author = await item.GetAttributeAsync("href") ?? string.Empty;
+            this.authorUrls.Add(author);
+        }
+    }
+
     private async Task SetGenres() {
-        var showMoreButton = page.Locator(".BookPageMetadataSection__genres .Button__container .Button__labelItem");
-        if (await showMoreButton.IsVisibleAsync())
-            await showMoreButton.ClickAsync();
+        //Removed this to save time.
+        // var showMoreButton = page.Locator(".BookPageMetadataSection__genres .Button__container .Button__labelItem");
+        // if (await showMoreButton.IsVisibleAsync())
+        //     await showMoreButton.ClickAsync();
 
         var genres = page.Locator(".BookPageMetadataSection__genreButton .Button__labelItem");
         var els = await genres.ElementHandlesAsync();
@@ -95,14 +132,29 @@ class BookPage {
     }
 
     public override string ToString() {
-        string val = string.Empty;
-        val += this.title + "\n";
-        val += this.description + "\n";
-        val += this.imageUrl + "\n";
-        val += string.Join( ",", this.genres) + "\n";
-        val += this.rating + "\n";
-        val += this.ratingCount + "\n";
-        val += this.reviewCount + "\n";
-        return val;
+        return this.bookId;
+    }
+
+    public SimpleBook ToSimpleBook() {
+        if (string.IsNullOrEmpty(this.title)) {
+            return new SimpleBook() {
+                id = this.bookId,
+            };
+        }
+
+        return new SimpleBook() {
+            id = this.bookId,
+            author = this.authors.FirstOrDefault() ?? string.Empty,
+            authorUrl = this.authorUrls.FirstOrDefault() ?? string.Empty,
+            title = this.title,
+            description = this.description,
+            imageUrl = this.imageUrl,
+            rating = Utility.ParseDecimalString(this.rating),
+            ratingCount = Utility.ParseRatingCount(this.ratingCount),
+            reviewCount = Utility.ParseReviewCount(this.reviewCount),
+            genres = this.genres,
+            authors = this.authors,
+            authorUrls = this.authorUrls,
+        };
     }
 }
