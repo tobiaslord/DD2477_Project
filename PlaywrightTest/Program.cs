@@ -1,29 +1,16 @@
-﻿using Microsoft.Playwright;
-using System.Runtime.InteropServices;
-using SimpleBookNamespace;
-using Newtonsoft.Json;
+﻿using PlaywrightTest;
 using ElasticSearchNamespace;
 
 class Program
 {
     static async Task Main(string[] args)
     {
-        var book = new SimpleBook
-        {
-            bookId = 13445,
-            title = "The Catcher in the Bye",
-            author = "J.D. Salinger",
-            description = "A village about a teenage boy who is expelled from his prep school and wanders around New York City.",
-            imageUrl = "https://www.example.com/images/catcher-in-the-rye.jpg",
-            rating = 4.5f,
-            ratingCount = 100,
-            reviewCount = 50,
-            genres = new List<string> { "Fiction", "Coming-of-age" }
-        };
         Elastic es = new Elastic();
-        es.IndexDocument(book, "test");
-        es.Search("novel village");
-        PlaywrightTest.Crawler crawler = new PlaywrightTest.Crawler();
-        await crawler.CrawlTest(120, 15);
+        es.IndexAll();
+        Environment.Exit(0);
+        Console.ReadKey();
+
+        // PlaywrightTest.Crawler crawler = new PlaywrightTest.Crawler();
+        // await crawler.CrawlTest(120, 15);
     }
 }
