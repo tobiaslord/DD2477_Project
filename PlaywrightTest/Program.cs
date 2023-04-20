@@ -10,10 +10,10 @@ class Program
     {
         var book = new SimpleBook
         {
-            bookId = 12445,
+            bookId = 13445,
             title = "The Catcher in the Bye",
             author = "J.D. Salinger",
-            description = "A about a teenage boy who is expelled from his prep school and wanders around New York City.",
+            description = "A village about a teenage boy who is expelled from his prep school and wanders around New York City.",
             imageUrl = "https://www.example.com/images/catcher-in-the-rye.jpg",
             rating = 4.5f,
             ratingCount = 100,
@@ -22,7 +22,7 @@ class Program
         };
         Elastic es = new Elastic();
         es.IndexDocument(book, "test");
-        es.Search("novel");
+        es.Search("novel village");
         PlaywrightTest.Crawler crawler = new PlaywrightTest.Crawler();
         await crawler.CrawlTest(120, 15);
     }
