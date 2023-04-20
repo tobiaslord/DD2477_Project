@@ -46,7 +46,7 @@ namespace ElasticSearchNamespace
             {
                 IndexDocument(book, book.id);
                 i++;
-                if (i % 1000)
+                if (i % 1000 == 0)
                 {
                     Console.WriteLine("Number of books: " + books.Count);
                 }
@@ -103,6 +103,5 @@ namespace ElasticSearchNamespace
 
 
         }
-
     }
 }
