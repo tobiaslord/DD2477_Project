@@ -1,15 +1,16 @@
 using Microsoft.Azure.Cosmos;
 using System.Configuration;
 
-
-class CosmosDB<T> : IDisposable {
+namespace Cosmos;
+public class CosmosDB<T> : IDisposable {
     private string connectionString;
     const string db = "books-database";
-    const string collection = "books-collection";
+    private string collection;
     private CosmosClient? _client;
     private Container? _container;
 
-    public CosmosDB() {
+    public CosmosDB(string collection) {
+        this.collection = collection;
         this.connectionString = ConfigurationManager.AppSettings.Get("ConnectionString") ?? "";
         this.InitializeCosmosClient();
     }

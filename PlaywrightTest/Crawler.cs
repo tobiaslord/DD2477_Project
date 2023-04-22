@@ -1,6 +1,7 @@
 ﻿using Microsoft.Playwright;
 using SimpleBookNamespace;
 using System.Collections.Concurrent;
+using Cosmos;
 
 namespace PlaywrightTest
 {
@@ -28,7 +29,7 @@ namespace PlaywrightTest
             var hungerGames = new BookPage(page, "2767052");
             await hungerGames.SetPageData();
             var item = hungerGames.ToSimpleBook();
-            using (var cosmos = new CosmosDB<SimpleBook>()) {
+            using (var cosmos = CosmosDBFactory.GetDB<SimpleBook>(CosmosCollection.Books)) {
                 await cosmos.PostDocument(item);
             }
             Console.WriteLine(hungerGames);
@@ -73,7 +74,7 @@ namespace PlaywrightTest
                 Console.WriteLine("Worker took: " + watch.ElapsedMilliseconds);
             }
 
-            using (var db = new CosmosDB<SimpleBook>()) {
+            using (var db = CosmosDBFactory.GetDB<SimpleBook>(CosmosCollection.Books)) {
                 DateTime nextCookieClear = nextCokieClear();
                 while (queue.TryDequeue(out string? id)) {
                     if (queue.Count % 50 == 0) {
