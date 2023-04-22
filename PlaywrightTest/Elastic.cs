@@ -10,7 +10,7 @@ namespace ElasticSearchNamespace
 {
     public class Elastic
     {
-        public ElasticClient _client = new ElasticClient(new ConnectionSettings(new Uri("http://localhost:9200")).DefaultIndex("book"));
+        public ElasticClient _client = new ElasticClient(new ConnectionSettings(new Uri("http://localhost:9200")).DefaultIndex("book_recommender"));
 
         public void IndexDocument<T>(T document, string id) where T : class
         {
@@ -29,6 +29,31 @@ namespace ElasticSearchNamespace
                 throw new Exception($"Failed to retrieve document with id '{id}'");
             }
             return getResponse.Source;
+        }
+
+        public void IndexAll()
+        {
+            string json = File.ReadAllText("books.json");
+
+            List<SimpleBook> books = JsonConvert.DeserializeObject<List<SimpleBook>>(json);
+            Console.WriteLine("Number of books: " + books.Count);
+            int i = 0;
+            foreach (SimpleBook book in books)
+            {
+                i++;
+                int num = int.Parse(book.id);
+                string check = book.title ?? "";
+                if (num > 50000 || check == "")
+                {
+                    continue;
+                }
+                IndexDocument(book, book.id);
+                if (i % 1000 == 0)
+                {
+                    Console.WriteLine("Number of books: " + books.Count);
+                }
+            }
+
         }
 
         public List<SimpleBook> Search(string query)
@@ -81,5 +106,62 @@ namespace ElasticSearchNamespace
 
         }
 
+        public List<SimpleBook> BetterSearch(string query)
+        {
+            var searchResponse = _client.Search<SimpleBook>(s => s
+                    .Query(q => q
+                        .Bool(b => b
+                            .Should(sh => sh
+                                .Match(m => m
+                                    .Field(f => f.title)
+                                    .Query(query)
+                                    .Boost(2)
+                                ),
+                                sh => sh
+                                .Match(m => m
+                                    .Field(f => f.author)
+                                    .Query(query)
+                                    .Boost(1)
+                                ),
+                                sh => sh
+                                .Match(m => m
+                                    .Field(f => f.description)
+                                    .Query(query)
+                                    .Boost(0.1)
+                                ),
+                                sh => sh
+                                .Match(m => m
+                                    .Field(f => f.genres)
+                                    .Query(query)
+                                    .Boost(1)
+                                )
+                            )
+                        )
+                    )
+                );
+
+            if (!searchResponse.IsValid)
+            {
+                throw new Exception("Error searching for documents: " + searchResponse.DebugInformation);
+            }
+
+            var documents = searchResponse.Documents.ToList();
+            foreach (var document in documents)
+            {
+                Console.WriteLine($"Book ID: {document.id}");
+                Console.WriteLine($"Title: {document.title}");
+                Console.WriteLine($"Description: {document.description}");
+                Console.WriteLine($"Image URL: {document.imageUrl}");
+                Console.WriteLine($"Rating: {document.rating}");
+                Console.WriteLine($"Rating count: {document.ratingCount}");
+                Console.WriteLine($"Review count: {document.reviewCount}");
+                Console.WriteLine($"Genres: {string.Join(", ", document.genres)}");
+                Console.WriteLine("----------------------");
+            }
+
+            return documents;
+        }
+
+
+       }
     }
-}
