@@ -7,11 +7,11 @@ namespace ElasticSearchNamespace
 {
     public class Elastic
     {
-        public ElasticClient _client = new ElasticClient(new ConnectionSettings(new Uri("http://localhost:9200")).DefaultIndex("book_recommender"));
+        public ElasticClient _client = new ElasticClient(new ConnectionSettings(new Uri("http://localhost:9200"))); // .DefaultIndex("users"));
 
-        public void IndexDocument<T>(T document, string id) where T : class
+        public void IndexDocument<T>(T document, string id, string indexName) where T : class
         {
-            var indexResponse = _client.IndexDocument(document);
+            var indexResponse = _client.Index(document, i => i.Index(indexName));
             if (!indexResponse.IsValid)
             {
                 throw new Exception($"Failed to index document with id '{id}'");
@@ -28,29 +28,50 @@ namespace ElasticSearchNamespace
             return getResponse.Source;
         }
 
-        public void IndexAll()
+        public void IndexAllBooks()
         {
-            string json = File.ReadAllText("books.json");
+            string json = File.ReadAllText("books2.json");
 
             List<SimpleBook> books = JsonConvert.DeserializeObject<List<SimpleBook>>(json);
             Console.WriteLine("Number of books: " + books.Count);
             int i = 0;
             foreach (SimpleBook book in books)
             {
-                i++;
-                int num = int.Parse(book.id);
-                string check = book.title ?? "";
-                if (num > 50000 || check == "")
+                if (book.author is null)
                 {
                     continue;
                 }
-                IndexDocument(book, book.id);
+                i++;
+                IndexDocument(book, book.id, "books");
                 if (i % 1000 == 0)
                 {
-                    Console.WriteLine("Number of books: " + books.Count);
+                    Console.WriteLine("Number of books: " + i);
                 }
             }
 
+        }
+
+        public void IndexAllUsers()
+        {
+            string json = File.ReadAllText("users.json");
+            List<User> users = JsonConvert.DeserializeObject<List<User>>(json);
+            Console.WriteLine("Number of user: " + users.Count);
+            int i = 0;
+            foreach (User user in users)
+            {
+                List<BookRating> ratings = user.ratings;
+                
+                if (ratings is null || ratings.Count == 0) // Skip users without ratings
+                {
+                    continue;
+                }
+                i++;
+                IndexDocument(user, user.id, "users");
+                if (i % 100 == 0)
+                {
+                    Console.WriteLine("Number of users indexed: " + i);
+                }
+            }
         }
 
         public List<SimpleBook> Search(string query)
@@ -161,4 +182,17 @@ namespace ElasticSearchNamespace
 
 
        }
+    public class User
+    {
+        public string id { get; set; }
+        public List<BookRating> ratings { get; set; }
     }
+
+    public class BookRating
+    {
+        public string bookId { get; set; }
+        public int rating { get; set; }
+        public int bookRatingCount { get; set; }
+    }
+
+}
