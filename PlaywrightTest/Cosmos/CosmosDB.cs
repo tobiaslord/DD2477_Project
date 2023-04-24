@@ -1,4 +1,5 @@
 using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Linq;
 using System.Configuration;
 
 namespace Cosmos;
@@ -36,6 +37,66 @@ public class CosmosDB<T> : IDisposable {
         catch (Exception ex) {
             Console.WriteLine("Could not save document", doc.ToString(), ex.ToString());
         }
+    }
+
+    public async Task<T?> GetDocument(string id, bool usePartitionKey = true) {
+        if (string.IsNullOrEmpty(id)) {
+            Console.WriteLine("Id was null");
+        }
+        if (_container == null) {
+            throw new Exception("Container not initialized");
+        }
+
+        var partitionKey = new PartitionKey(id);
+        if (!usePartitionKey)
+            partitionKey = PartitionKey.None;
+
+        try {
+            var item = await _container.ReadItemAsync<T>(id, partitionKey);
+            return item.Resource;
+        }
+        catch (Exception ex) {
+            // Console.WriteLine(ex.Message);
+            return default(T);
+        }
+    }
+
+    public async Task DeleteDocument(string id, bool usePartitionKey = true) {
+        if (string.IsNullOrEmpty(id)) {
+            Console.WriteLine("Id was null");
+        }
+        if (_container == null) {
+            throw new Exception("Container not initialized");
+        }
+
+        var partitionKey = new PartitionKey(id);
+        if (!usePartitionKey)
+            partitionKey = PartitionKey.None;
+
+        try {
+            var item = await _container.DeleteItemAsync<T>(id, partitionKey);
+        }
+        catch (Exception ex) {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    public IOrderedQueryable<T> GetQueryable() {
+        return _container.GetItemLinqQueryable<T>();
+    }
+
+    public FeedIterator<U> ExecuteSQL<U>(string query) {
+        using FeedIterator<U> feed = _container.GetItemQueryIterator<U>(
+            queryText: query
+        );
+        return feed;
+    }
+
+    public FeedIterator<T> GetEnumerator() {
+        if (_container == null) {
+            throw new Exception("Container not initialized");
+        }
+        return _container.GetItemQueryIterator<T>();
     }
 
     public void Dispose()

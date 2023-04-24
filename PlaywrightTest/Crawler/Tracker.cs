@@ -1,5 +1,7 @@
 
-    namespace PlaywrightTest;
+using System.Collections.Concurrent;
+
+namespace Crawler;
     class Tracker {
         private SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
         private List<DateTime> requests = new List<DateTime>();
@@ -22,9 +24,9 @@
                 this.semaphore.Release();
             }
         }
-        public void PrintRollingAverage(int seconds) {
+        public double PrintRollingAverage(int seconds) {
             if (this.firstRequest == null)
-                return;
+                return 0;
 
             var until = DateTime.UtcNow.AddSeconds(seconds);
 
@@ -38,12 +40,23 @@
             }
             var windowDiff = getSecondsDiff(DateTime.UtcNow, lastInSeq);
             var totalDiff = getSecondsDiff(DateTime.UtcNow, (DateTime)this.firstRequest);
-
+            var avg = totalDiff / this.totalCount;
             Console.WriteLine($"{count} last {windowDiff} seconds, avg {windowDiff / 300}");
-            Console.WriteLine($"{this.totalCount} last {totalDiff} seconds, avg {totalDiff / this.totalCount}");
+            Console.WriteLine($"{this.totalCount} last {totalDiff} seconds, avg {avg}");
+
+            return avg;
         }
         private double getSecondsDiff(DateTime dt1, DateTime dt2) {
             var span = dt1 - dt2;
             return span.TotalSeconds;
+        }
+        public void PrintStatus(ConcurrentQueue<string> queue, int nth) {
+            if (queue.Count % nth == 0) {
+                var queueCount = queue.Count;
+                Console.WriteLine(queueCount + " nodes left");
+                var avg = this.PrintRollingAverage(30);
+                var timeLeft = avg * queueCount;
+                Console.WriteLine($"{timeLeft} seconds left");
+            }
         }
     }

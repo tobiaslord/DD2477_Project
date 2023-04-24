@@ -1,3 +1,4 @@
+using Models;
 namespace Cosmos;
 
 public static class CosmosDBFactory {
@@ -14,4 +15,14 @@ public static class CosmosDBFactory {
     public static CosmosDB<T> GetDB<T>(CosmosCollection collection) {
         return new CosmosDB<T>(GetCollection(collection));
     }
+    public static CosmosDB<T> GetDB<T>(string collection) {
+        return new CosmosDB<T>(collection);
+    }
+    public static CosmosDB<SimpleUser> GetUserDB() {
+        return GetDB<SimpleUser>(CosmosCollection.Users);
+    }
+    public static CosmosDB<SimpleBook> GetBookDB() {
+        return GetDB<SimpleBook>(CosmosCollection.Books);
+    }
+
 }

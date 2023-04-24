@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using System.Configuration;
 using Microsoft.Playwright;
-using PlaywrightTest;
 
+namespace Crawler;
 public class CrawlerManager : IDisposable
 {
     private ConcurrentQueue<string> _ipQueue = new ConcurrentQueue<string>();
@@ -47,6 +47,10 @@ public class CrawlerManager : IDisposable
                     }
                 }
             }
+        }
+        for (int i = 0; i < 50; i++)
+        {
+            this._ipQueue.TryDequeue(out string ip);
         }
         Console.WriteLine("# Done");
     }

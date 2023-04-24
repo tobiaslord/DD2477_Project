@@ -1,10 +1,11 @@
 using Microsoft.Playwright;
-using SimpleBookNamespace;
-using System.Linq;
+using Models;
 
+namespace Crawler.Pages;
 class BookPage {
     private IPage page;
     private string bookId = string.Empty;
+    // private string contextId = string.Empty;
     private string title = string.Empty;
     private string description = string.Empty;
     private string imageUrl = string.Empty;
@@ -14,6 +15,7 @@ class BookPage {
     private string reviewCount = string.Empty;
     private List<string> genres = new List<string>();
     private List<string> authors = new List<string>();
+    private List<Tuple<string, int>> reviews = new List<Tuple<string, int>>();
     public BookPage(IPage page, string id) {
         this.page = page;
         this.bookId = id;
@@ -22,6 +24,7 @@ class BookPage {
         await this.LoadPage();
         if (await this.TrySetTitle()) {
             Task.WaitAll(new Task[] {
+                // this.SetContextId(),
                 this.SetDescription(),
                 this.SetGenres(),
                 this.SetAuthors(),
@@ -31,6 +34,13 @@ class BookPage {
                 this.SetRatingCount(),
                 this.SetReviewCount(),
             });
+        }
+    }
+    public async Task SetReviewData() {
+        await this.LoadPage();
+        if (await this.TrySetTitle()) {
+            await this.WaitForReviews();
+            await this.SetUserReviews();
         }
     }
     public async Task<bool> IsErrorPage() {
@@ -72,6 +82,11 @@ class BookPage {
         // this.title = "Error for id: " + this.bookId;
         return false;
     }
+
+    // private async Task SetContextId() {
+    //     var div = page.Locator(".BookPage__bookCover");
+    //     this.contextId = await div.GetAttributeAsync("data-csa-c-s_id") ?? string.Empty;
+    // }
 
     private async Task SetDescription() {
         var description = page.GetByTestId("description").Locator(".Formatted");
@@ -116,6 +131,30 @@ class BookPage {
         }
     }
 
+    private async Task WaitForReviews() {
+        var profiles = page.Locator("#ReviewsSection div.ReviewsList__listContext.ReviewsList__listContext--centered");
+        await profiles.InnerTextAsync();
+    }
+    private async Task SetUserReviews() {
+        var profiles = page.Locator(".BookPage__reviewsSection .ReviewsSection .ReviewCard__profile");
+        var els = await profiles.ElementHandlesAsync();
+
+        foreach (var item in els) {
+            var userLink = await item.QuerySelectorAsync(".ReviewerProfile__name a");
+            if (userLink == null) continue;
+            var href = await userLink.GetAttributeAsync("href") ?? string.Empty;
+            var userId = Utility.GetIdFromUrl(href);
+
+            var reviewEl = await item.QuerySelectorAsync(".ReviewerProfile__meta > span");
+            if (reviewEl == null) continue;
+            var reviewText = await reviewEl.InnerTextAsync();
+            var reviews = Utility.ParseReviewCount(reviewText);
+            if (reviews == -1) continue;
+
+            this.reviews.Add(new Tuple<string, int>(userId, reviews));
+        }
+    }
+
     private async Task SetGenres() {
         //Removed this to save time.
         // var showMoreButton = page.Locator(".BookPageMetadataSection__genres .Button__container .Button__labelItem");
@@ -144,6 +183,8 @@ class BookPage {
 
         return new SimpleBook() {
             id = this.bookId,
+            bookId = this.bookId,
+            // contextId = this.contextId,
             author = this.authors.FirstOrDefault() ?? string.Empty,
             authorUrl = this.authorUrls.FirstOrDefault() ?? string.Empty,
             title = this.title,
@@ -156,5 +197,14 @@ class BookPage {
             authors = this.authors,
             authorUrls = this.authorUrls,
         };
+    }
+
+    public List<BookReview> GetReviews() {
+        return this.reviews
+            .Select(r => new BookReview {
+                userId = r.Item1,
+                reviewCount = r.Item2,
+            })
+            .ToList();
     }
 }

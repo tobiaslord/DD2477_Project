@@ -1,3 +1,4 @@
+namespace Crawler.Pages;
 static class Utility {
     public static float ParseDecimalString(string val) {
         val = val.Replace('.', ',');
@@ -20,5 +21,26 @@ static class Utility {
             return result;
         }
         return -1;
+    }
+    public static string GetIdFromUrl(string url) {
+        try {
+            string start = "show/";
+            int startIdx = url.IndexOf(start) + start.Length;
+            url = url.Substring(startIdx);
+
+            int endIdx = url.IndexOf('-');
+            if (endIdx == -1)
+                endIdx = url.IndexOf('.');
+            if (endIdx == -1)
+                return url;
+
+
+            return url.Substring(0, endIdx);
+        } catch (Exception ex) {
+            Console.WriteLine("Error parsing URL:" + url);
+            Console.WriteLine(ex.Message);
+
+            return string.Empty;
+        }
     }
 }
