@@ -127,6 +127,7 @@ namespace ElasticSearchNamespace
         public List<SimpleBook> BetterSearch(string query)
         {
             var searchResponse = _client.Search<SimpleBook>(s => s
+                    .Index("books")
                     .Query(q => q
                         .Bool(b => b
                             .Should(sh => sh
@@ -151,7 +152,7 @@ namespace ElasticSearchNamespace
                                 .Match(m => m
                                     .Field(f => f.genres)
                                     .Query(query)
-                                    .Boost(1)
+                                    .Boost(4)
                                 )
                             )
                         )

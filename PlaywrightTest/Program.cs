@@ -9,7 +9,7 @@ class Program
     static async Task Main(string[] args)
     {
         Elastic es = new Elastic();
-        es.IndexAllBooks();
+        es.BetterSearch("romance");
 
         //var cosmos = new CosmosScripts();
         //await cosmos.PerformRemoveDuplicates();
