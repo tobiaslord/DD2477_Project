@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <RootNamespace>Graphical_Interface</RootNamespace>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="back-arrow-vector.png" />
+    <None Remove="black-star.png" />
+    <None Remove="black-start.png" />
+    <None Remove="yellow-star.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlaywrightTest\PlaywrightTest.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="back-arrow-vector.png" />
+    <Resource Include="black-star.png" />
+    <Resource Include="yellow-star.png" />
+  </ItemGroup>
+
+</Project>
