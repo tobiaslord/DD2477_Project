@@ -3,12 +3,19 @@ using Crawler;
 using ElasticSearchNamespace;
 using Cosmos;
 using Models;
+using PlaywrightTest;
 
 class Program
 {
     static async Task Main(string[] args)
     {
-        Elastic es = new Elastic();
+        // Load Environment variables
+        var root = Directory.GetCurrentDirectory();
+        var dotenv = Path.Combine(root, ".env");
+        DotEnv.Load(dotenv);
+
+        ElasticIndex es = new ElasticIndex();
+        //es.IndexAllBooks();
         es.BetterSearch("romance");
 
         //var cosmos = new CosmosScripts();
