@@ -5,7 +5,7 @@ VisualStudioVersion = 17.4.33103.184
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlaywrightTest", "PlaywrightTest.csproj", "{228A4F1F-5077-49FB-A671-A232ACDDBBD0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Graphical Interface", "..\Graphical Interface\Graphical Interface.csproj", "{4ECAA18E-2D52-45C8-91A0-14C06C0778ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graphical Interface", "..\Graphical Interface\Graphical Interface.csproj", "{4ECAA18E-2D52-45C8-91A0-14C06C0778ED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

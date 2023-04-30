@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Graphical_Interface.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Book Finder" Height="550" Width="900">
+        Title="Book Finder" Height="900" Width="1000">
     
     <Grid>
         <Grid.RowDefinitions>
@@ -86,7 +86,12 @@
 
             <Image x:Name="BookDetailsImage" Grid.Column="0" Grid.Row="0" Margin="10" />
             <Button x:Name="BackButton" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" Click="BackButton_Click" Background="Transparent" BorderBrush="Transparent">
-                <Image Source="back-arrow-vector.png" Width="50" Height="50" />
+                <Button.Template>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <ContentPresenter />
+                    </ControlTemplate>
+                </Button.Template>
+                <Image Source="back-arrow-vector.png" Width="70" Height="70" />
             </Button>
 
 
@@ -110,20 +115,45 @@
                         <ColumnDefinition Width="2*" />
                         <ColumnDefinition Width="2*" />
                     </Grid.ColumnDefinitions>
-                    <Button x:Name="StarOneButton" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" Click="BackButton_Click" Background="Transparent" BorderBrush="Transparent">
-                        <Image Source="black-star.png" Width="50" Height="50" />
+                    <Button x:Name="StarOneButton" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10"  Click="StarButton_Click" Background="Transparent" BorderBrush="Transparent" MouseEnter="StarButton_MouseEnter" MouseLeave="StarButton_MouseLeave">
+                        <Button.Template>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <ContentPresenter />
+                            </ControlTemplate>
+                        </Button.Template>
+                        <Image x:Name="StarOneButtonImg" Source="black-star.png" Width="50" Height="50" />
                     </Button>
-                    <Button x:Name="StarTwoButton" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" Click="BackButton_Click" Background="Transparent" BorderBrush="Transparent">
-                        <Image Source="black-star.png" Width="50" Height="50" />
+                    <Button x:Name="StarTwoButton" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" Click="StarButton_Click" Background="Transparent" BorderBrush="Transparent" MouseEnter="StarButton_MouseEnter" MouseLeave="StarButton_MouseLeave">
+                        <Button.Template>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <ContentPresenter />
+                            </ControlTemplate>
+                        </Button.Template>
+                        <Image x:Name="StarTwoButtonImg" Source="black-star.png" Width="50" Height="50" />
                     </Button>
-                    <Button x:Name="StarThreeButton" Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" Click="BackButton_Click" Background="Transparent" BorderBrush="Transparent">
-                        <Image Source="black-star.png" Width="50" Height="50" />
+                    <Button x:Name="StarThreeButton" Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" Click="StarButton_Click" Background="Transparent" BorderBrush="Transparent" MouseEnter="StarButton_MouseEnter" MouseLeave="StarButton_MouseLeave">
+                        <Button.Template>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <ContentPresenter />
+                            </ControlTemplate>
+                        </Button.Template>
+                        <Image x:Name="StarThreeButtonImg" Source="black-star.png" Width="50" Height="50" />
                     </Button>
-                    <Button x:Name="StarFourButton" Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" Click="BackButton_Click" Background="Transparent" BorderBrush="Transparent">
-                        <Image Source="black-star.png" Width="50" Height="50" />
+                    <Button x:Name="StarFourButton" Grid.Column="3" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" Click="StarButton_Click" Background="Transparent" BorderBrush="Transparent" MouseEnter="StarButton_MouseEnter" MouseLeave="StarButton_MouseLeave">
+                        <Button.Template>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <ContentPresenter />
+                            </ControlTemplate>
+                        </Button.Template>
+                        <Image x:Name="StarFourButtonImg" Source="black-star.png" Width="50" Height="50" />
                     </Button>
-                    <Button x:Name="StarFiveButton" Grid.Column="4" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" Click="BackButton_Click" Background="Transparent" BorderBrush="Transparent">
-                        <Image Source="black-star.png" Width="50" Height="50" />
+                    <Button x:Name="StarFiveButton" Grid.Column="4" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" Click="StarButton_Click" Background="Transparent" BorderBrush="Transparent" MouseEnter="StarButton_MouseEnter" MouseLeave="StarButton_MouseLeave">
+                        <Button.Template>
+                            <ControlTemplate TargetType="{x:Type Button}">
+                                <ContentPresenter />
+                            </ControlTemplate>
+                        </Button.Template>
+                        <Image x:Name="StarFiveButtonImg" Source="black-star.png" Width="50" Height="50" />
                     </Button>
                 </Grid>
             </Grid>
