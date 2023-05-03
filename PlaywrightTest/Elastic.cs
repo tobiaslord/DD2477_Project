@@ -39,10 +39,10 @@ namespace ElasticSearchNamespace
             }
         }
 
-        public T GetDocument<T>(string id) where T : class
+        public T GetDocument<T>(string id, string indexName) where T : class
         {
             var getResponse = _client.Get<T>(id);
-            if (!getResponse.IsValidResponse || getResponse.Source == null)
+            if (!getResponse.IsValid || getResponse.Source == null)
             {
                 throw new Exception($"Failed to retrieve document with id '{id}'");
             }
@@ -51,8 +51,8 @@ namespace ElasticSearchNamespace
 
         public void IndexAllBooks()
         {
-            string json = File.ReadAllText("D:\\programming\\DD2477_Project\\PlaywrightTest\\books.json");
-
+            // string json = File.ReadAllText("D:\\programming\\DD2477_Project\\PlaywrightTest\\books.json");
+            string json = File.ReadAllText("books2.json");
             List<SimpleBook> books = JsonConvert.DeserializeObject<List<SimpleBook>>(json);
             Console.WriteLine("Number of books: " + books.Count);
             int i = 0;
@@ -94,10 +94,65 @@ namespace ElasticSearchNamespace
                 }
             }
         }
+        // Calculates the vector representation of users
+        public Dictionary<string, double> GetUserVector(User user)
+        {
+            Dictionary<string, double> user_rep = new Dictionary<string, double>();
+            double avg = user.ratings.Average(b => b.rating);
+            foreach (BookRating br in user.ratings)
+            {
+                double scalar = avg - br.rating;
+                
+                if (scalar == 0)
+                {
+                    scalar = 0.1;
+                }
+                if (scalar < 0)
+                {
+                    //Maybe dont weigh negative feedback as much
+                }
+                List<string> genres = GetDocument<SimpleBook>(br.bookId, "books").genres;
+                Dictionary<string, double> book_rep = GetBookVector(genres, 0.8);
+                foreach (string genre in book_rep.Keys)
+                {
+                    if (!user_rep.ContainsKey(genre))
+                    {
+                        user_rep[genre] = 0;
+                    }
+                    user_rep[genre] += scalar*book_rep[genre];
+                }
+            }
+            double length = Math.Sqrt(user_rep.Values.Sum(x => x * x));
+ 
+            foreach (string genre in user_rep.Keys)
+            {
+                // user_rep[genre] = Math.Max(user_rep[genre], 0);
+                user_rep[genre] /= length;
+            }
+            return user_rep;
+        }
+
+        public Dictionary<string, double> GetBookVector(List<string> genres, double decayFactor)
+        {
+            Dictionary<string, double> vector_rep = new Dictionary<string, double>();
+            double length = 0;
+            for (int i=0; i<genres.Count; i++)
+            {
+                double weight = Math.Pow(decayFactor, i);
+                vector_rep.Add(genres[i], weight);
+                length += weight * weight;
+            }
+            foreach (string genre in vector_rep.Keys)
+            {
+                vector_rep[genre] /= length;
+            }
+            return vector_rep;
+        }
 
         public List<SimpleBook> Search(string query)
         {
             var searchResponse = _client.Search<SimpleBook>(s => s
+                .Size(1000)
                 .Query(q => q
                     .Bool(b => b
                         .Should(sh => sh
@@ -145,10 +200,11 @@ namespace ElasticSearchNamespace
 
         }
 
-        public List<SimpleBook> BetterSearch(string query)
+        public List<SearchResponse> BetterSearch(string query)
         {
             var searchResponse = _client.Search<SimpleBook>(s => s
                     .Index("books")
+                    .Size(50)
                     .Query(q => q
                         .Bool(b => b
                             .Should(sh => sh
@@ -185,25 +241,46 @@ namespace ElasticSearchNamespace
                 throw new Exception("Error searching for documents: " + searchResponse.DebugInformation);
             }
 
-            var documents = searchResponse.Documents.ToList();
-            foreach (var document in documents)
-            {
-                Console.WriteLine($"Book ID: {document.id}");
-                Console.WriteLine($"Title: {document.title}");
-                Console.WriteLine($"Description: {document.description}");
-                Console.WriteLine($"Image URL: {document.imageUrl}");
-                Console.WriteLine($"Rating: {document.rating}");
-                Console.WriteLine($"Rating count: {document.ratingCount}");
-                Console.WriteLine($"Review count: {document.reviewCount}");
-                Console.WriteLine($"Genres: {string.Join(", ", document.genres)}");
-                Console.WriteLine("----------------------");
-            }
+            var documentsWithScores = searchResponse.Hits.Select(hit => new SearchResponse{ Score = hit.Score, Book = hit.Source }).ToList();
+       
 
-            return documents;
+            return documentsWithScores;
+        }
+
+        public List<SimpleBook> GraphicSearch(string query, User user)
+        {
+            List<SearchResponse> books = BetterSearch(query);
+            Dictionary<string, double> user_vec = GetUserVector(user);
+            double norm = books.First().Score ?? 0;
+            foreach (SearchResponse sbook in books)
+            {
+                SimpleBook book = sbook.Book;
+                Dictionary<string, double> book_vec = GetBookVector(book.genres, 0.7);
+                double sim = GetSimilarity(book_vec, user_vec);
+                sbook.Score = sbook.Score / norm + sim;
+            }
+            List<SimpleBook> s = books.OrderBy(a => a.Score).Select(a=>a.Book).ToList();
+            return s;
         }
 
 
-       }
+
+        public double GetSimilarity(Dictionary<String, double> first, Dictionary<String, double> second)
+        {
+            var similarity = 0.0;
+            foreach (string key in first.Keys)
+            {
+                if (second.ContainsKey(key))
+                {
+                    similarity += first[key] * second[key];
+                }
+            }
+            return similarity;
+        }
+    }
+
+    
+
     public class User
     {
         public string id { get; set; }
@@ -215,6 +292,12 @@ namespace ElasticSearchNamespace
         public string bookId { get; set; }
         public int rating { get; set; }
         public int bookRatingCount { get; set; }
+    }
+
+    public class SearchResponse
+    {
+        public SimpleBook Book { get; set; }
+        public double? Score { get; set; }
     }
 
 }
