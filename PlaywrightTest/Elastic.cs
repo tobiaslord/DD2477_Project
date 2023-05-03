@@ -3,6 +3,7 @@ using Models;
 using Nest;
 using Elastic.Clients.Elasticsearch;
 using Elastic.Transport;
+using Utils = Vectors.Vectors;
 using User = Models.SimpleUser;
 using BookRating = Models.Rating;
 
@@ -265,10 +266,10 @@ namespace ElasticSearchNamespace
             {
                 SimpleBook book = sbook.Book;
                 Dictionary<string, double> book_vec = GetBookVector(book.genres, 0.7);
-                double sim = GetSimilarity(book_vec, user_vec);
-                sbook.Score = sbook.Score / norm + sim;
+                double sim = Utils.CosineSimilarityEuclidian(book_vec, user_vec);
+                sbook.Score = (sim + sbook.Score / norm) / 2;
             }
-            List<SimpleBook> s = books.OrderBy(a => a.Score).Select(a=>a.Book).ToList();
+            List<SimpleBook> s = books.OrderBy(a => a.Score).Select(a=>a.Book).Reverse().ToList();
             return s;
         }
 
