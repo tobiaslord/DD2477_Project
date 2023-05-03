@@ -9,10 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="back-arrow-vector.png" />
-    <None Remove="black-star.png" />
     <None Remove="black-start.png" />
-    <None Remove="yellow-star.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,9 +17,25 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="back-arrow-vector.png" />
-    <Resource Include="black-star.png" />
-    <Resource Include="yellow-star.png" />
+    <Resource Include="back-arrow-vector.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="black-star.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="yellow-star.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update=".env">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Resources\" />
   </ItemGroup>
 
 </Project>

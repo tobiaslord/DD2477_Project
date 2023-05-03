@@ -1,18 +1,39 @@
 using Newtonsoft.Json;
 using Models;
 using Nest;
+using Elastic.Clients.Elasticsearch;
+using Elastic.Transport;
+
 
 
 namespace ElasticSearchNamespace
 {
-    public class Elastic
+    public class ElasticIndex
     {
-        public ElasticClient _client = new ElasticClient(new ConnectionSettings(new Uri("http://localhost:9200"))); // .DefaultIndex("users"));
+
+        ElasticsearchClient _client;
+        public ElasticIndex()
+        {
+            var fingerprint = Environment.GetEnvironmentVariable("FINGERPRINT");
+            var un = Environment.GetEnvironmentVariable("USERNAME");
+            var pw = Environment.GetEnvironmentVariable("PASSWORD");
+
+
+            _client = new ElasticsearchClient(new ElasticsearchClientSettings(new Uri("https://localhost:9200"))
+                                                                .CertificateFingerprint(fingerprint)
+                                                                .Authentication(new BasicAuthentication(un, pw)));
+
+        }
+
+
+
+        //public ElasticClient _client = new ElasticClient(new ConnectionSettings(new Uri("http://localhost:9200"))
+        //        .BasicAuthentication("elastic", "HrdVMU0GgTzrZPi*8Vo1")); // .DefaultIndex("users"));
 
         public void IndexDocument<T>(T document, string id, string indexName) where T : class
         {
             var indexResponse = _client.Index(document, i => i.Index(indexName));
-            if (!indexResponse.IsValid)
+            if (!indexResponse.IsValidResponse)
             {
                 throw new Exception($"Failed to index document with id '{id}'");
             }
@@ -20,7 +41,7 @@ namespace ElasticSearchNamespace
 
         public T GetDocument<T>(string id, string indexName) where T : class
         {
-            var getResponse = _client.Get<T>(id, g => g.Index(indexName));
+            var getResponse = _client.Get<T>(id);
             if (!getResponse.IsValid || getResponse.Source == null)
             {
                 throw new Exception($"Failed to retrieve document with id '{id}'");
@@ -30,8 +51,8 @@ namespace ElasticSearchNamespace
 
         public void IndexAllBooks()
         {
+            // string json = File.ReadAllText("D:\\programming\\DD2477_Project\\PlaywrightTest\\books.json");
             string json = File.ReadAllText("books2.json");
-
             List<SimpleBook> books = JsonConvert.DeserializeObject<List<SimpleBook>>(json);
             Console.WriteLine("Number of books: " + books.Count);
             int i = 0;
@@ -154,7 +175,7 @@ namespace ElasticSearchNamespace
                 )
             );
 
-            if (!searchResponse.IsValid)
+            if (!searchResponse.IsValidResponse)
             {
                 throw new Exception("Error searching for documents: " + searchResponse.DebugInformation);
             }
@@ -202,7 +223,7 @@ namespace ElasticSearchNamespace
                                 .Match(m => m
                                     .Field(f => f.description)
                                     .Query(query)
-                                    .Boost(0.1)
+                                    .Boost(0.1f)
                                 ),
                                 sh => sh
                                 .Match(m => m
@@ -215,7 +236,7 @@ namespace ElasticSearchNamespace
                     )
                 );
 
-            if (!searchResponse.IsValid)
+            if (!searchResponse.IsValidResponse)
             {
                 throw new Exception("Error searching for documents: " + searchResponse.DebugInformation);
             }
