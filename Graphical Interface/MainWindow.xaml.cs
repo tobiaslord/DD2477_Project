@@ -70,7 +70,7 @@ namespace Graphical_Interface
 
             user.ratings.Add(new Rating
             {
-                bookId = CurrentBook.bookId,
+                bookId = CurrentBook.id,
                 rating = newRating,
                 bookRatingCount = 1,
             });
@@ -125,6 +125,7 @@ namespace Graphical_Interface
             BookDetailsImage.Source = new BitmapImage(new Uri(book.imageUrl));
             BookDetailsDescription.Text = book.description;
             BookDetailsAuthor.Text = string.Join(", ", book.authors);
+            BookDetailsGenres.Text = string.Join(", ", book.genres);
 
             SearchTextBox.Visibility = Visibility.Collapsed;
             BookResultsGrid.Visibility = Visibility.Collapsed;

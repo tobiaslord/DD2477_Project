@@ -42,7 +42,8 @@ namespace ElasticSearchNamespace
 
         public T GetDocument<T>(string id, string indexName) where T : class
         {
-            var getResponse = _client.Get<T>(id);
+            var getResponse = _client.Get<T>(id, g => g.Index(indexName));
+            //var getResponse = _client.Get<T>(id);
             if (!getResponse.IsValidResponse || getResponse.Source == null)
             {
                 throw new Exception($"Failed to retrieve document with id '{id}'");
@@ -75,7 +76,7 @@ namespace ElasticSearchNamespace
 
         public void IndexAllUsers()
         {
-            string json = File.ReadAllText("users.json");
+            string json = File.ReadAllText("D:\\programming\\DD2477_Project\\PlaywrightTest\\users.json");
             List<User> users = JsonConvert.DeserializeObject<List<User>>(json);
             Console.WriteLine("Number of user: " + users.Count);
             int i = 0;
@@ -254,6 +255,9 @@ namespace ElasticSearchNamespace
 
             if (user.ratings.Count() == 0)
                 return books.Select(a => a.Book).ToList();
+
+            if (books.Count() == 0)
+                return new List<SimpleBook>();
 
             Dictionary<string, double> user_vec = GetUserVector(user);
             double norm = books.First().Score ?? 0;
