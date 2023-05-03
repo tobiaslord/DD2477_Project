@@ -4,7 +4,7 @@ namespace Models;
 
 public class SimpleUser {
     public string id { get; set; }
-    public List<Rating> ratings { get; set; }
+    public List<Rating> ratings { get; set; } = new List<Rating>();
 }
 
 public class Rating {

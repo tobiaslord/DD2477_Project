@@ -3,7 +3,8 @@ using Models;
 using Nest;
 using Elastic.Clients.Elasticsearch;
 using Elastic.Transport;
-
+using User = Models.SimpleUser;
+using BookRating = Models.Rating;
 
 
 namespace ElasticSearchNamespace
@@ -42,7 +43,7 @@ namespace ElasticSearchNamespace
         public T GetDocument<T>(string id, string indexName) where T : class
         {
             var getResponse = _client.Get<T>(id);
-            if (!getResponse.IsValid || getResponse.Source == null)
+            if (!getResponse.IsValidResponse || getResponse.Source == null)
             {
                 throw new Exception($"Failed to retrieve document with id '{id}'");
             }
@@ -250,6 +251,10 @@ namespace ElasticSearchNamespace
         public List<SimpleBook> GraphicSearch(string query, User user)
         {
             List<SearchResponse> books = BetterSearch(query);
+
+            if (user.ratings.Count() == 0)
+                return books.Select(a => a.Book).ToList();
+
             Dictionary<string, double> user_vec = GetUserVector(user);
             double norm = books.First().Score ?? 0;
             foreach (SearchResponse sbook in books)
@@ -279,20 +284,6 @@ namespace ElasticSearchNamespace
         }
     }
 
-    
-
-    public class User
-    {
-        public string id { get; set; }
-        public List<BookRating> ratings { get; set; }
-    }
-
-    public class BookRating
-    {
-        public string bookId { get; set; }
-        public int rating { get; set; }
-        public int bookRatingCount { get; set; }
-    }
 
     public class SearchResponse
     {
