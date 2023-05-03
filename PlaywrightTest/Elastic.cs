@@ -42,7 +42,7 @@ namespace ElasticSearchNamespace
         public T GetDocument<T>(string id, string indexName) where T : class
         {
             var getResponse = _client.Get<T>(id);
-            if (!getResponse.IsValid || getResponse.Source == null)
+            if (!getResponse.IsValidResponse || getResponse.Source == null)
             {
                 throw new Exception($"Failed to retrieve document with id '{id}'");
             }
