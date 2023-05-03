@@ -18,6 +18,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Book = Models.SimpleBook;
+using User = Models.SimpleUser;
+using Rating = Models.Rating;
 
 
 namespace Graphical_Interface
@@ -27,6 +29,7 @@ namespace Graphical_Interface
     /// </summary>
     public partial class MainWindow : Window
     {
+        User user;
         Book CurrentBook;
         ElasticIndex searcher;
 
@@ -37,7 +40,9 @@ namespace Graphical_Interface
             var dotenv = System.IO.Path.Combine(root, ".env");
             DotEnv.Load(dotenv);
 
+            user = new User();
             searcher = new ElasticIndex();
+            user.id = "0";
         }
 
         // Event handler for the Search button in the main view
@@ -64,6 +69,12 @@ namespace Graphical_Interface
             Button button = sender as Button;
             int newRating = Grid.GetColumn(button) + 1;
 
+            user.ratings.Add(new Rating
+            {
+                bookId = CurrentBook.bookId,
+                rating = newRating,
+                bookRatingCount = 1,
+            });
             // RateBook(CurrentBook, newRating);
         }
 
@@ -124,65 +135,7 @@ namespace Graphical_Interface
         // Method to perform a search and display the results in the book list
         private void Search(string searchTerm)
         {
-            // List<Book> matchedBooks = search(searchTerm);
-            //List<Book> matchedBooks = new List<Book>();
-
-            //var matchedBooks = new List<SimpleBook>
-            //{
-            //    new SimpleBook
-            //    {
-            //        id = "1",
-            //        bookId = "1",
-            //        author = "Author One",
-            //        title = "Book One",
-            //        description = "Description for Book One",
-            //        imageUrl = "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1622355533i/4667024.jpg",
-            //        authorUrl = "https://example.com/author1",
-            //        rating = 4.5f,
-            //        ratingCount = 1000,
-            //        reviewCount = 250,
-            //        genres = new List<string> { "Mystery", "Thriller" },
-            //        authors = new List<string> { "Author One, A. Andersson" },
-            //        authorUrls = new List<string> { "https://example.com/author1" }
-            //    },
-            //    new SimpleBook
-            //    {
-            //        id = "2",
-            //        bookId = "2",
-            //        author = "Author Two",
-            //        title = "Book Two with a really long name",
-            //        description = "Description for Book Two",
-            //        imageUrl = "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1631251689i/4214.jpg",
-            //        authorUrl = "https://example.com/author2",
-            //        rating = 3.8f,
-            //        ratingCount = 800,
-            //        reviewCount = 180,
-            //        genres = new List<string> { "Fantasy", "Adventure" },
-            //        authors = new List<string> { "Author Two" },
-            //        authorUrls = new List<string> { "https://example.com/author2" }
-            //    },
-            //    new SimpleBook
-            //    {
-            //        id = "3",
-            //        bookId = "3",
-            //        author = "Author Three",
-            //        title = "Book Three",
-            //        description = "Description for Book Two",
-            //        imageUrl = "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1442375726i/7366.jpg",
-            //        authorUrl = "https://example.com/author2",
-            //        rating = 3.8f,
-            //        ratingCount = 800,
-            //        reviewCount = 180,
-            //        genres = new List<string> { "Fantasy", "Adventure" },
-            //        authors = new List<string> { "Author Two" },
-            //        authorUrls = new List<string> { "https://example.com/author2" }
-            //    },
-            //};
-
-            
-
             BookResultsGrid.ItemsSource = searcher.BetterSearch(searchTerm);
-
         }
     }
 }
