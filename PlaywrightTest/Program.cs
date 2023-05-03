@@ -11,12 +11,13 @@ class Program
         Elastic es = new Elastic();
         User user = es.GetDocument<User>("4482859", "users");
         Dictionary<string, double> user_vec = es.GetUserVector(user);
-        List<SimpleBook> books = es.BetterSearch("romance");
-        foreach (SimpleBook book in books)
+        List<SearchResponse> books = es.BetterSearch("space");
+        foreach (SearchResponse sbook in books)
         {
+            SimpleBook book = sbook.Book;
             Dictionary<string, double> book_vec = es.GetBookVector(book.genres, 0.7);
             double sim = es.GetSimilarity(book_vec, user_vec);
-            Console.WriteLine("Title: {0} ------ Similarity: {1}", book.title, sim);
+            Console.WriteLine("Title: {0} ------ Similarity: {1} -------- OGScore: {2}", book.title, sim, sbook.Score);
         }
 
         //var cosmos = new CosmosScripts();

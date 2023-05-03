@@ -105,6 +105,7 @@ namespace ElasticSearchNamespace
  
             foreach (string genre in user_rep.Keys)
             {
+                // user_rep[genre] = Math.Max(user_rep[genre], 0);
                 user_rep[genre] /= length;
             }
             return user_rep;
@@ -130,6 +131,7 @@ namespace ElasticSearchNamespace
         public List<SimpleBook> Search(string query)
         {
             var searchResponse = _client.Search<SimpleBook>(s => s
+                .Size(1000)
                 .Query(q => q
                     .Bool(b => b
                         .Should(sh => sh
@@ -177,10 +179,11 @@ namespace ElasticSearchNamespace
 
         }
 
-        public List<SimpleBook> BetterSearch(string query)
+        public List<SearchResponse> BetterSearch(string query)
         {
             var searchResponse = _client.Search<SimpleBook>(s => s
                     .Index("books")
+                    .Size(50)
                     .Query(q => q
                         .Bool(b => b
                             .Should(sh => sh
@@ -217,24 +220,30 @@ namespace ElasticSearchNamespace
                 throw new Exception("Error searching for documents: " + searchResponse.DebugInformation);
             }
 
-            var documents = searchResponse.Documents.ToList();
-            foreach (var document in documents)
-            {
-                Console.WriteLine($"Book ID: {document.id}");
-                Console.WriteLine($"Title: {document.title}");
-                Console.WriteLine($"Description: {document.description}");
-                Console.WriteLine($"Image URL: {document.imageUrl}");
-                Console.WriteLine($"Rating: {document.rating}");
-                Console.WriteLine($"Rating count: {document.ratingCount}");
-                Console.WriteLine($"Review count: {document.reviewCount}");
-                Console.WriteLine($"Genres: {string.Join(", ", document.genres)}");
-                Console.WriteLine("----------------------");
-            }
-
-            return documents;
-        }
+            var documentsWithScores = searchResponse.Hits.Select(hit => new SearchResponse{ Score = hit.Score, Book = hit.Source }).ToList();
        
-        
+
+            return documentsWithScores;
+        }
+
+        public List<SimpleBook> GraphicSearch(string query, User user)
+        {
+            List<SearchResponse> books = BetterSearch(query);
+            Dictionary<string, double> user_vec = GetUserVector(user);
+            double norm = books.First().Score ?? 0;
+            foreach (SearchResponse sbook in books)
+            {
+                SimpleBook book = sbook.Book;
+                Dictionary<string, double> book_vec = GetBookVector(book.genres, 0.7);
+                double sim = GetSimilarity(book_vec, user_vec);
+                sbook.Score = sbook.Score / norm + sim;
+            }
+            List<SimpleBook> s = books.OrderBy(a => a.Score).Select(a=>a.Book).ToList();
+            return s;
+        }
+
+
+
         public double GetSimilarity(Dictionary<String, double> first, Dictionary<String, double> second)
         {
             var similarity = 0.0;
@@ -262,6 +271,12 @@ namespace ElasticSearchNamespace
         public string bookId { get; set; }
         public int rating { get; set; }
         public int bookRatingCount { get; set; }
+    }
+
+    public class SearchResponse
+    {
+        public SimpleBook Book { get; set; }
+        public double? Score { get; set; }
     }
 
 }
