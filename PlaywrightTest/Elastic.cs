@@ -244,44 +244,7 @@ namespace ElasticSearchNamespace
             return documentsWithScores;
         }
 
-        public List<SimpleBook> GraphicSearch(string query, User user)
-        {
-            List<SearchResponse> books = BetterSearch(query);
 
-            if (user.ratings.Count() == 0)
-                return books.Select(a => a.Book).ToList();
-
-            if (books.Count() == 0)
-                return new List<SimpleBook>();
-
-            Dictionary<string, double> user_vec = GetUserVector(user);
-            var x = user_vec.OrderBy(x => x.Value).ToList();
-            double norm = books.First().Score ?? 0;
-            foreach (SearchResponse sbook in books)
-            {
-                SimpleBook book = sbook.Book;
-                Dictionary<string, double> book_vec = GetBookVector(book.genres, 0.7);
-                double sim = Utils.CosineSimilarityEuclidian(book_vec, user_vec);
-                sbook.Score = (sim + sbook.Score / norm) / 2;
-            }
-            List<SimpleBook> s = books.OrderBy(a => a.Score).Select(a=>a.Book).Reverse().ToList();
-            return s;
-        }
-
-        
-
-        public double GetSimilarity(Dictionary<String, double> first, Dictionary<String, double> second)
-        {
-            var similarity = 0.0;
-            foreach (string key in first.Keys)
-            {
-                if (second.ContainsKey(key))
-                {
-                    similarity += first[key] * second[key];
-                }
-            }
-            return similarity;
-        }
 
         public Dictionary<string, User> GetAllUsers()
         {

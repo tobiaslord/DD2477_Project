@@ -30,7 +30,6 @@ namespace Graphical_Interface
     public partial class MainWindow : Window
     {
         readonly User user;
-        User extendedUser = new User();
         Book? CurrentBook;
         readonly SearchEngine engine;
         int currentBookDisplayRating;
@@ -84,7 +83,6 @@ namespace Graphical_Interface
                 bookRatingCount = 1,
             });
 
-            extendedUser = engine.ExtendUser(user);
             currentBookDisplayRating = GetDisplayRating(CurrentBook);
         }
 
@@ -153,7 +151,7 @@ namespace Graphical_Interface
         // Method to perform a search and display the results in the book list
         private void Search(string searchTerm)
         {
-            BookResultsGrid.ItemsSource = engine.GraphicSearch(searchTerm, extendedUser);
+            BookResultsGrid.ItemsSource = engine.GraphicSearch(searchTerm, user);
         }
     }
 }
