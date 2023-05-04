@@ -32,6 +32,7 @@ namespace Graphical_Interface
         User user = new User();
         Book CurrentBook;
         ElasticIndex searcher;
+        int currentBookDisplayRating;
 
         public MainWindow()
         {
@@ -54,6 +55,14 @@ namespace Graphical_Interface
             Search(searchTerm);
         }
 
+        private int GetDisplayRating(Book b)
+        {
+            var rating = user.ratings.SingleOrDefault(r => r.bookId == b.id);
+            if (rating is null)
+                return 0;
+            return rating.rating;
+        }
+
         // Event handler for clicking a search result
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
@@ -65,6 +74,9 @@ namespace Graphical_Interface
         // Event handler for clicking a search result
         private void StarButton_Click(object sender, RoutedEventArgs e)
         {
+            if (user.ratings.SingleOrDefault(r => r.bookId == CurrentBook.id) is not null)
+                return;
+
             Button button = sender as Button;
             int newRating = Grid.GetColumn(button) + 1;
 
@@ -74,30 +86,36 @@ namespace Graphical_Interface
                 rating = newRating,
                 bookRatingCount = 1,
             });
-            // RateBook(CurrentBook, newRating);
+
+            currentBookDisplayRating = GetDisplayRating(CurrentBook);
         }
 
         private void StarButton_MouseEnter(object sender, MouseEventArgs e)
         {
             Button button = sender as Button;
             int column = Grid.GetColumn(button);
-
-            for (int i = 0; i <= column; i++)
-            {
-                Image img = GetStarImageByIndex(i);
-                img.Source = new BitmapImage(new Uri("pack://application:,,,/yellow-star.png"));
-            }
+            LightStars(column + 1);
         }
 
         private void StarButton_MouseLeave(object sender, MouseEventArgs e)
         {
             Button button = sender as Button;
             int column = Grid.GetColumn(button);
+            LightStars(currentBookDisplayRating);
+        }
 
-            for (int i = 0; i <= column; i++)
+        private void LightStars(int nr)
+        {
+            for (int i = 0; i <= 4; i++)
             {
                 Image img = GetStarImageByIndex(i);
                 img.Source = new BitmapImage(new Uri("pack://application:,,,/black-star.png"));
+            }
+
+            for (int i = 0; i < nr; i++)
+            {
+                Image img = GetStarImageByIndex(i);
+                img.Source = new BitmapImage(new Uri("pack://application:,,,/yellow-star.png"));
             }
         }
 
@@ -120,6 +138,8 @@ namespace Graphical_Interface
             // Get the Book object that was clicked
             Book book = (Book)((Border)sender).DataContext;
             CurrentBook = book;
+            currentBookDisplayRating = GetDisplayRating(CurrentBook);
+            LightStars(currentBookDisplayRating);
 
             // Set the image source and description text of the BookDetailsImage and BookDetailsDescription elements
             BookDetailsImage.Source = new BitmapImage(new Uri(book.imageUrl));
