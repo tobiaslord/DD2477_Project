@@ -29,20 +29,17 @@ namespace Graphical_Interface
     /// </summary>
     public partial class MainWindow : Window
     {
-        User user = new User();
-        Book CurrentBook;
-        ElasticIndex searcher;
+        readonly User user;
+        User extendedUser = new User();
+        Book? CurrentBook;
+        readonly SearchEngine engine;
         int currentBookDisplayRating;
 
         public MainWindow()
         {
             InitializeComponent();
-            var root = Directory.GetCurrentDirectory();
-            var dotenv = System.IO.Path.Combine(root, ".env");
-            DotEnv.Load(dotenv);
-
-            searcher = new ElasticIndex();
-            user.id = "0";
+            engine = new SearchEngine();
+            user = new User{ id = "0" };
         }
 
         // Event handler for the Search button in the main view
@@ -87,6 +84,7 @@ namespace Graphical_Interface
                 bookRatingCount = 1,
             });
 
+            extendedUser = engine.ExtendUser(user);
             currentBookDisplayRating = GetDisplayRating(CurrentBook);
         }
 
@@ -155,7 +153,7 @@ namespace Graphical_Interface
         // Method to perform a search and display the results in the book list
         private void Search(string searchTerm)
         {
-            BookResultsGrid.ItemsSource = searcher.GraphicSearch(searchTerm, user);
+            BookResultsGrid.ItemsSource = engine.GraphicSearch(searchTerm, extendedUser);
         }
     }
 }

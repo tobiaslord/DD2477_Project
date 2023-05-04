@@ -6,7 +6,8 @@ using Elastic.Transport;
 using Utils = Vectors.Vectors;
 using User = Models.SimpleUser;
 using BookRating = Models.Rating;
-
+using System.Diagnostics;
+using Elastic.Clients.Elasticsearch.Core.MGet;
 
 namespace ElasticSearchNamespace
 {
@@ -14,23 +15,19 @@ namespace ElasticSearchNamespace
     {
 
         ElasticsearchClient _client;
+
         public ElasticIndex()
         {
-            var fingerprint = Environment.GetEnvironmentVariable("FINGERPRINT");
-            var un = Environment.GetEnvironmentVariable("USERNAME");
-            var pw = Environment.GetEnvironmentVariable("PASSWORD");
+            var fingerprint = Environment.GetEnvironmentVariable("FINGERPRINT") ?? "";
+            var un = Environment.GetEnvironmentVariable("USERNAME") ?? "";
+            var pw = Environment.GetEnvironmentVariable("PASSWORD") ?? "";
 
 
             _client = new ElasticsearchClient(new ElasticsearchClientSettings(new Uri("https://localhost:9200"))
                                                                 .CertificateFingerprint(fingerprint)
                                                                 .Authentication(new BasicAuthentication(un, pw)));
-
         }
 
-
-
-        //public ElasticClient _client = new ElasticClient(new ConnectionSettings(new Uri("http://localhost:9200"))
-        //        .BasicAuthentication("elastic", "HrdVMU0GgTzrZPi*8Vo1")); // .DefaultIndex("users"));
 
         public void IndexDocument<T>(T document, string id, string indexName) where T : class
         {
@@ -43,6 +40,7 @@ namespace ElasticSearchNamespace
 
         public T GetDocument<T>(string id, string indexName) where T : class
         {
+
             var getResponse = _client.Get<T>(id, g => g.Index(indexName));
             //var getResponse = _client.Get<T>(id);
             if (!getResponse.IsValidResponse || getResponse.Source == null)
@@ -55,7 +53,7 @@ namespace ElasticSearchNamespace
         public void IndexAllBooks()
         {
             // string json = File.ReadAllText("D:\\programming\\DD2477_Project\\PlaywrightTest\\books.json");
-            string json = File.ReadAllText("books2.json");
+            string json = File.ReadAllText("D:\\programming\\DD2477_Project\\PlaywrightTest\\books2.json");
             List<SimpleBook> books = JsonConvert.DeserializeObject<List<SimpleBook>>(json);
             Console.WriteLine("Number of books: " + books.Count);
             int i = 0;
@@ -101,37 +99,33 @@ namespace ElasticSearchNamespace
         public Dictionary<string, double> GetUserVector(User user)
         {
             Dictionary<string, double> user_rep = new Dictionary<string, double>();
-            double avg = user.ratings.Average(b => b.rating);
+
             foreach (BookRating br in user.ratings)
             {
-                double scalar = avg - br.rating;
+                if (br.bookId is null || br.bookId == "")
+                    continue;
                 
-                if (scalar == 0)
+                try
                 {
-                    scalar = 0.1;
-                }
-                if (scalar < 0)
-                {
-                    //Maybe dont weigh negative feedback as much
-                }
-                List<string> genres = GetDocument<SimpleBook>(br.bookId, "books").genres;
-                Dictionary<string, double> book_rep = GetBookVector(genres, 0.8);
-                foreach (string genre in book_rep.Keys)
-                {
-                    if (!user_rep.ContainsKey(genre))
+                    List<string> genres = GetDocument<SimpleBook>(br.bookId, "books").genres;
+                    Dictionary<string, double> book_rep = GetBookVector(genres, 0.8);
+                    
+                    foreach (string genre in book_rep.Keys)
                     {
-                        user_rep[genre] = 0;
+                        if (!user_rep.ContainsKey(genre))
+                        {
+                            user_rep[genre] = 0;
+                        }
+                        user_rep[genre] += book_rep[genre] * (br.rating - 2.5f);
                     }
-                    user_rep[genre] += scalar*book_rep[genre];
+                } 
+                catch (Exception ex)
+                {
+                    Debug.WriteLine("Rated book not found: " + br.bookId);
+                    continue;
                 }
             }
-            double length = Math.Sqrt(user_rep.Values.Sum(x => x * x));
- 
-            foreach (string genre in user_rep.Keys)
-            {
-                // user_rep[genre] = Math.Max(user_rep[genre], 0);
-                user_rep[genre] /= length;
-            }
+
             return user_rep;
         }
 
@@ -261,6 +255,7 @@ namespace ElasticSearchNamespace
                 return new List<SimpleBook>();
 
             Dictionary<string, double> user_vec = GetUserVector(user);
+            var x = user_vec.OrderBy(x => x.Value).ToList();
             double norm = books.First().Score ?? 0;
             foreach (SearchResponse sbook in books)
             {
@@ -273,7 +268,7 @@ namespace ElasticSearchNamespace
             return s;
         }
 
-
+        
 
         public double GetSimilarity(Dictionary<String, double> first, Dictionary<String, double> second)
         {
@@ -287,8 +282,24 @@ namespace ElasticSearchNamespace
             }
             return similarity;
         }
+
+        public Dictionary<string, User> GetAllUsers()
+        {
+            return _client.Search<User>(u => u.Index("users").Size(200))
+                .Hits
+                .Select(u => new User { id = u.Source.id, ratings = u.Source.ratings })
+                .ToDictionary(a => a.id);
+        }
+
+        public Dictionary<string, Dictionary<string, double>> GetUserVectors(Dictionary<string, User> users)
+        {
+            return users
+                .Select(u => (u.Key, GetUserVector(u.Value)))
+                .ToDictionary(a => a.Key, b => b.Item2);
+        }
     }
 
+    
 
     public class SearchResponse
     {
