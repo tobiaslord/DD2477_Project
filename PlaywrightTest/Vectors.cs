@@ -13,7 +13,7 @@ namespace Vectors
         {
             if (vector is null || vector.Count == 0)
                 return 0;
-            return Math.Sqrt(vector.Values.Aggregate((a, b) => a + b * b));
+            return Math.Sqrt(vector.Values.Aggregate(0d, (a, b) => a + b * b));
         }
 
         public static double ManhattanLength(Dictionary<string, double> vector)
