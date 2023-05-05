@@ -12827,11 +12827,6 @@
         "bookRatingCount": 16703
       },
       {
-        "bookId": "6521305",
-        "rating": 4,
-        "bookRatingCount": 31000
-      },
-      {
         "bookId": "10105980",
         "rating": 4,
         "bookRatingCount": 46436
@@ -37217,16 +37212,6 @@
         "bookRatingCount": 62
       },
       {
-        "bookId": "17859574",
-        "rating": 3,
-        "bookRatingCount": 18449
-      },
-      {
-        "bookId": "13539043",
-        "rating": 4,
-        "bookRatingCount": 450719
-      },
-      {
         "bookId": "477900",
         "rating": 4,
         "bookRatingCount": 14178
@@ -37245,16 +37230,6 @@
         "bookId": "21856367",
         "rating": 4,
         "bookRatingCount": 35438
-      },
-      {
-        "bookId": "642628",
-        "rating": 5,
-        "bookRatingCount": 3936607
-      },
-      {
-        "bookId": "414883",
-        "rating": 4,
-        "bookRatingCount": 1273
       },
       {
         "bookId": "20604365",
@@ -65912,31 +65887,6 @@
         "bookRatingCount": 22032
       },
       {
-        "bookId": "27248604",
-        "rating": 4,
-        "bookRatingCount": 243344
-      },
-      {
-        "bookId": "25708817",
-        "rating": 5,
-        "bookRatingCount": 694
-      },
-      {
-        "bookId": "822226",
-        "rating": 4,
-        "bookRatingCount": 19485
-      },
-      {
-        "bookId": "17573205",
-        "rating": 5,
-        "bookRatingCount": 7298
-      },
-      {
-        "bookId": "3097766",
-        "rating": 4,
-        "bookRatingCount": 501
-      },
-      {
         "bookId": "874560",
         "rating": 5,
         "bookRatingCount": 10344
@@ -65955,11 +65905,6 @@
         "bookId": "24874359",
         "rating": 5,
         "bookRatingCount": 1092
-      },
-      {
-        "bookId": "24874311",
-        "rating": 5,
-        "bookRatingCount": 6923
       },
       {
         "bookId": "11734160",
@@ -128702,11 +128647,6 @@
         "bookRatingCount": 112206
       },
       {
-        "bookId": "17257639",
-        "rating": 5,
-        "bookRatingCount": 3936623
-      },
-      {
         "bookId": "277139",
         "rating": 4,
         "bookRatingCount": 2750
@@ -128717,19 +128657,9 @@
         "bookRatingCount": 290736
       },
       {
-        "bookId": "8437849",
-        "rating": 4,
-        "bookRatingCount": 1213
-      },
-      {
         "bookId": "1525808",
         "rating": 4,
         "bookRatingCount": 18108
-      },
-      {
-        "bookId": "6933727",
-        "rating": 4,
-        "bookRatingCount": 25823
       },
       {
         "bookId": "67556",
@@ -128740,16 +128670,6 @@
         "bookId": "29409618",
         "rating": 4,
         "bookRatingCount": 9
-      },
-      {
-        "bookId": "28693945",
-        "rating": 3,
-        "bookRatingCount": 1882
-      },
-      {
-        "bookId": "27420709",
-        "rating": 3,
-        "bookRatingCount": 10269
       },
       {
         "bookId": "7746739",

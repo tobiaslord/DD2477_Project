@@ -11,6 +11,7 @@ using Book = Models.SimpleBook;
 using User = Models.SimpleUser;
 using Utils = Vectors.Vectors;
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace PlaywrightTest
 {
@@ -28,7 +29,9 @@ namespace PlaywrightTest
 
             ElasticIndex = new ElasticIndex();
             users = ElasticIndex.GetAllUsers2();
-            userVectors = ElasticIndex.GetUserVectors(users);
+            // userVectors = ElasticIndex.GetUserVectors(users);
+            string json = File.ReadAllText("C:\\Users\\chickenthug\\Desktop\\test\\PlaywrightTest\\user_vectors.json");
+            userVectors = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, double>>>(json);
         }
 
         public List<Book> GraphicSearch(string query, User user)
