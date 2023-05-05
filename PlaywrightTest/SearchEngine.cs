@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Book = Models.SimpleBook;
 using User = Models.SimpleUser;
 using Utils = Vectors.Vectors;
+using System.Diagnostics;
 
 namespace PlaywrightTest
 {
@@ -26,20 +27,32 @@ namespace PlaywrightTest
             DotEnv.Load(dotenv);
 
             ElasticIndex = new ElasticIndex();
-            users = ElasticIndex.GetAllUsers();
+            users = ElasticIndex.GetAllUsers2();
             userVectors = ElasticIndex.GetUserVectors(users);
         }
 
         public List<Book> GraphicSearch(string query, User user)
         {
             List<SearchResponse> books = ElasticIndex.BetterSearch(query);
-
-            if (user.ratings.Count() == 0)
-                return books.Select(a => a.Book).ToList();
-
             if (books.Count() == 0)
                 return new List<Book>();
 
+            double maxRatingCount = Math.Log(books.Max(sr => sr.Book.ratingCount));
+            double norm = books.First().Score ?? 0;
+            if (user.ratings.Count() == 0)
+            {
+                foreach (SearchResponse sbook in books)
+                {
+                    Book book = sbook.Book;
+                    sbook.Score = (sbook.Score / norm + Math.Log(book.ratingCount) / maxRatingCount) / 2;
+                }
+                return books
+                .OrderBy(a => a.Score)
+                .Select(a => a.Book)
+                .Reverse()
+                .ToList();
+            }
+                
             Dictionary<string, double> user_vec = ElasticIndex.GetUserVector(user);
 
             if (user.ratings is not null && user.ratings.Count() > 0)
@@ -47,14 +60,13 @@ namespace PlaywrightTest
 
             // Only for debugging 
             var x = user_vec.OrderBy(x => x.Value).ToList();
-
-            double norm = books.First().Score ?? 0;
+            
             foreach (SearchResponse sbook in books)
             {
                 Book book = sbook.Book;
                 Dictionary<string, double> book_vec = ElasticIndex.GetBookVector(book.genres, 0.7);
                 double sim = Utils.CosineSimilarityEuclidian(book_vec, user_vec);
-                sbook.Score = (sim + sbook.Score / norm) / 2;
+                sbook.Score = (3*sim + sbook.Score / norm + Math.Log(book.ratingCount)/ maxRatingCount) / 5;
             }
 
             List<Book> s = books

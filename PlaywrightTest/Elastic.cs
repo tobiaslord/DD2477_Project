@@ -14,8 +14,8 @@ namespace ElasticSearchNamespace
     public class ElasticIndex
     {
 
-        ElasticsearchClient _client;
-
+        // ElasticsearchClient _client;
+        public ElasticClient _client = new ElasticClient(new ConnectionSettings(new Uri("http://localhost:9200")));
         public ElasticIndex()
         {
             var fingerprint = Environment.GetEnvironmentVariable("FINGERPRINT") ?? "";
@@ -23,16 +23,18 @@ namespace ElasticSearchNamespace
             var pw = Environment.GetEnvironmentVariable("PASSWORD") ?? "";
 
 
-            _client = new ElasticsearchClient(new ElasticsearchClientSettings(new Uri("https://localhost:9200"))
-                                                                .CertificateFingerprint(fingerprint)
-                                                                .Authentication(new BasicAuthentication(un, pw)));
-        }
+            // _client = new ElasticsearchClient(new ElasticsearchClientSettings(new Uri("https://localhost:9200"))
+                                                               // .CertificateFingerprint(fingerprint)
+                                                               // .Authentication(new BasicAuthentication(un, pw)));
+
+            
+    }
 
 
         public void IndexDocument<T>(T document, string id, string indexName) where T : class
         {
             var indexResponse = _client.Index(document, i => i.Index(indexName));
-            if (!indexResponse.IsValidResponse)
+            if (!indexResponse.IsValid)
             {
                 throw new Exception($"Failed to index document with id '{id}'");
             }
@@ -43,7 +45,7 @@ namespace ElasticSearchNamespace
 
             var getResponse = _client.Get<T>(id, g => g.Index(indexName));
             //var getResponse = _client.Get<T>(id);
-            if (!getResponse.IsValidResponse || getResponse.Source == null)
+            if (!getResponse.IsValid || getResponse.Source == null)
             {
                 throw new Exception($"Failed to retrieve document with id '{id}'");
             }
@@ -172,7 +174,7 @@ namespace ElasticSearchNamespace
                 )
             );
 
-            if (!searchResponse.IsValidResponse)
+            if (!searchResponse.IsValid)
             {
                 throw new Exception("Error searching for documents: " + searchResponse.DebugInformation);
             }
@@ -233,7 +235,7 @@ namespace ElasticSearchNamespace
                     )
                 );
 
-            if (!searchResponse.IsValidResponse)
+            if (!searchResponse.IsValid)
             {
                 throw new Exception("Error searching for documents: " + searchResponse.DebugInformation);
             }
@@ -252,6 +254,14 @@ namespace ElasticSearchNamespace
                 .Hits
                 .Select(u => new User { id = u.Source.id, ratings = u.Source.ratings })
                 .ToDictionary(a => a.id);
+        }
+
+        public Dictionary<string, User> GetAllUsers2()
+        {
+            string json = File.ReadAllText("C:\\Users\\chickenthug\\Desktop\\test\\PlaywrightTest\\users.json");
+            List<User> users = JsonConvert.DeserializeObject<List<User>>(json);
+            return users.ToDictionary(a => a.id);
+
         }
 
         public Dictionary<string, Dictionary<string, double>> GetUserVectors(Dictionary<string, User> users)
