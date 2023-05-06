@@ -20,6 +20,7 @@ using System.Windows.Shapes;
 using Book = Models.SimpleBook;
 using User = Models.SimpleUser;
 using Rating = Models.Rating;
+using System.Diagnostics;
 
 
 namespace Graphical_Interface
@@ -48,7 +49,9 @@ namespace Graphical_Interface
                 return;
 
             string searchTerm = SearchTextBox.Text;
+            
             Search(searchTerm);
+            
         }
 
         private int GetDisplayRating(Book b)
@@ -151,7 +154,12 @@ namespace Graphical_Interface
         // Method to perform a search and display the results in the book list
         private void Search(string searchTerm)
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
             BookResultsGrid.ItemsSource = engine.GraphicSearch(searchTerm, user);
+            stopwatch.Stop();
+
+            TimeSpan elapsedTime = stopwatch.Elapsed;
+            Debug.WriteLine("Elapsed time: " + elapsedTime);
         }
     }
 }

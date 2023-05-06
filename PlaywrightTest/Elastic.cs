@@ -97,6 +97,38 @@ namespace ElasticSearchNamespace
                 }
             }
         }
+
+        public void CleanDatabase()
+        {
+            string json = File.ReadAllText("C:\\Users\\chickenthug\\Desktop\\test\\PlaywrightTest\\books2.json");
+            List<SimpleBook> books = JsonConvert.DeserializeObject<List<SimpleBook>>(json);
+            Dictionary<string, string> unique = new Dictionary<string, string>();
+            int count = 0;
+            foreach (SimpleBook book in books)
+            {
+                var documentExistsResponse = _client.DocumentExists<SimpleBook>(book.id, d => d.Index("books"));
+                if (documentExistsResponse.Exists)
+                {
+                    // Document exists in the index
+                    if (unique.ContainsKey(book.title))
+                    {
+                        if (unique[book.title] == book.author)
+                        {
+                            var deleteResponse = _client.Delete<SimpleBook>(book.id, d => d.Index("books"));
+                            count++;
+                        }
+                    }
+                    else
+                    {
+                        unique.Add(book.title, book.author);
+                    }
+
+                }
+            }
+            Console.WriteLine("COUNT: {0}", count);
+        }
+
+
         // Calculates the vector representation of users
         public Dictionary<string, double> GetUserVector(User user)
         {
