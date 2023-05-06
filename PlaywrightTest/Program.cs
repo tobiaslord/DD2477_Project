@@ -15,7 +15,7 @@ class Program
         DotEnv.Load(dotenv);
 
         ElasticIndex es = new ElasticIndex();
-        es.CleanDatabase();
+        es.CleanDatabaseEnglish();
         //es.BetterSearch("romance");
 
         //var cosmos = new CosmosScripts();

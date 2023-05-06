@@ -8,6 +8,7 @@ using User = Models.SimpleUser;
 using BookRating = Models.Rating;
 using System.Diagnostics;
 using Elastic.Clients.Elasticsearch.Core.MGet;
+using NTextCat;
 
 namespace ElasticSearchNamespace
 {
@@ -126,6 +127,46 @@ namespace ElasticSearchNamespace
                 }
             }
             Console.WriteLine("COUNT: {0}", count);
+        }
+
+        public void CleanDatabaseEnglish()
+        {
+            string json = File.ReadAllText("C:\\Users\\chickenthug\\Desktop\\test\\PlaywrightTest\\books2.json");
+            List<SimpleBook> books = JsonConvert.DeserializeObject<List<SimpleBook>>(json);
+            Dictionary<string, string> unique = new Dictionary<string, string>();
+            int count = 0;
+            int count2 = 0;
+            var factory = new RankedLanguageIdentifierFactory();
+            var identifier = factory.Load("C:\\Users\\chickenthug\\Desktop\\test\\PlaywrightTest\\Core14.profile.xml");
+            
+            foreach (SimpleBook book in books)
+            {
+                var documentExistsResponse = _client.DocumentExists<SimpleBook>(book.id, d => d.Index("books"));
+                if (book.description is null || book.description.Length < 30)
+                {
+                    continue;
+                }
+                if (documentExistsResponse.Exists)
+                {
+                    // Document exists in the index
+                    var languages = identifier.Identify(book.description);
+                    var mostCertainLanguage = languages.FirstOrDefault();
+                    if (mostCertainLanguage != null)
+                    {
+                        if (mostCertainLanguage.Item1.Iso639_3 != "eng")
+                        {
+                            var res = _client.Delete<SimpleBook>(book.id, d => d.Index("books"));
+                            count++;
+                        }
+                    }
+                    else
+                    {
+                        count2++;
+                    }
+
+                }
+            }
+            Console.WriteLine("Error Count: {0}, Non-english Count: {1}", count2, count);
         }
 
 
