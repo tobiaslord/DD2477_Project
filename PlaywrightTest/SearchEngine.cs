@@ -53,7 +53,9 @@ namespace PlaywrightTest
                 .OrderBy(a => a.Score)
                 .Select(a => a.Book)
                 .Reverse()
+                .Take(52)
                 .ToList();
+                
             }
                 
             Dictionary<string, double> user_vec = ElasticIndex.GetUserVector(user);
@@ -76,8 +78,9 @@ namespace PlaywrightTest
                 .OrderBy(a => a.Score)
                 .Select(a => a.Book)
                 .Reverse()
+                .Take(52)
                 .ToList();
-
+            
             return s;
         }
 
@@ -92,11 +95,11 @@ namespace PlaywrightTest
                 .GetRange(0, 5)
                 .ToList();
 
-            double[] similarUserWeights = { 0.4, 0.3, 0.2, 0.1, 0.1 };
+            double[] similarUserWeights = { 0.4, 0.2, 0.1, 0.1, 0.1 };
 
 
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 3; i++)
             {
                 foreach (var genreRating in userVectors[topSimUsers[i].id])
                 {

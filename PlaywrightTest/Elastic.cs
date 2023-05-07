@@ -276,20 +276,20 @@ namespace ElasticSearchNamespace
         {
             var searchResponse = _client.Search<SimpleBook>(s => s
                     .Index("books")
-                    .Size(50)
+                    .Size(200)
                     .Query(q => q
                         .Bool(b => b
                             .Should(sh => sh
                                 .Match(m => m
                                     .Field(f => f.title)
                                     .Query(query)
-                                    .Boost(2)
+                                    .Boost(1)
                                 ),
                                 sh => sh
                                 .Match(m => m
                                     .Field(f => f.author)
                                     .Query(query)
-                                    .Boost(1)
+                                    .Boost(2)
                                 ),
                                 sh => sh
                                 .Match(m => m
@@ -301,7 +301,7 @@ namespace ElasticSearchNamespace
                                 .Match(m => m
                                     .Field(f => f.genres)
                                     .Query(query)
-                                    .Boost(4)
+                                    .Boost(1)
                                 )
                             )
                         )
