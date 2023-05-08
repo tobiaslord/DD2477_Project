@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33103.184
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backend", "Backend\Backend.csproj", "{E443804A-ED34-4D4A-A642-E761A5A57D8C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graphical Interface", "Graphical Interface\Graphical Interface.csproj", "{FEE35217-C3BD-4783-8BD4-092555FD178E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FAF96043-60C3-4760-9392-AD40E5465307}"
+	ProjectSection(SolutionItems) = preProject
+		.env = .env
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E443804A-ED34-4D4A-A642-E761A5A57D8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E443804A-ED34-4D4A-A642-E761A5A57D8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E443804A-ED34-4D4A-A642-E761A5A57D8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E443804A-ED34-4D4A-A642-E761A5A57D8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FEE35217-C3BD-4783-8BD4-092555FD178E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEE35217-C3BD-4783-8BD4-092555FD178E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEE35217-C3BD-4783-8BD4-092555FD178E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEE35217-C3BD-4783-8BD4-092555FD178E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BEE514A1-BCF1-47B4-B180-D1CF672FCFC0}
+	EndGlobalSection
+EndGlobal
