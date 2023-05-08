@@ -13,7 +13,7 @@ using Utils = Vectors.Vectors;
 using System.Diagnostics;
 using System.Text.Json;
 
-namespace PlaywrightTest
+namespace Backend
 {
     public class SearchEngine
     {
@@ -29,8 +29,7 @@ namespace PlaywrightTest
 
             ElasticIndex = new ElasticIndex();
             users = ElasticIndex.GetAllUsers2();
-            // userVectors = ElasticIndex.GetUserVectors(users);
-            string json = File.ReadAllText("C:\\Users\\chickenthug\\Desktop\\test\\PlaywrightTest\\user_vectors.json");
+            string json = File.ReadAllText("D:\\programming\\DD2477_Project\\PlaywrightTest\\user_vectors.json");
             userVectors = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, double>>>(json);
         }
 
@@ -50,9 +49,8 @@ namespace PlaywrightTest
                     sbook.Score = (sbook.Score / norm + Math.Log(book.ratingCount) / maxRatingCount) / 2;
                 }
                 return books
-                .OrderBy(a => a.Score)
+                .OrderByDescending(a => a.Score)
                 .Select(a => a.Book)
-                .Reverse()
                 .Take(52)
                 .ToList();
                 
@@ -75,9 +73,8 @@ namespace PlaywrightTest
             }
 
             List<Book> s = books
-                .OrderBy(a => a.Score)
+                .OrderByDescending(a => a.Score)
                 .Select(a => a.Book)
-                .Reverse()
                 .Take(52)
                 .ToList();
             
@@ -86,16 +83,15 @@ namespace PlaywrightTest
 
         public Dictionary<string, double> ExtendUserVector(Dictionary<string, double> mainUserVector)
         {
-            
+
             var topSimUsers = users
                 .ToList()
                 .OrderByDescending(x => Utils.CosineSimilarityEuclidian(mainUserVector, userVectors[x.Key]))
                 .Select(x => x.Value)
-                .ToList()
-                .GetRange(0, 5)
+                .Take(3)
                 .ToList();
 
-            double[] similarUserWeights = { 0.4, 0.2, 0.1, 0.1, 0.1 };
+            double[] similarUserWeights = { 0.4, 0.2, 0.1 };
 
 
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace PlaywrightTest
+namespace Backend
 {
     public static class DotEnv
     {

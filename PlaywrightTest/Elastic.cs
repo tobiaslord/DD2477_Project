@@ -14,28 +14,26 @@ namespace ElasticSearchNamespace
 {
     public class ElasticIndex
     {
-
-        // ElasticsearchClient _client;
-        public ElasticClient _client = new ElasticClient(new ConnectionSettings(new Uri("http://localhost:9200")));
+        string base_path;
+        ElasticsearchClient _client;
         public ElasticIndex()
         {
             var fingerprint = Environment.GetEnvironmentVariable("FINGERPRINT") ?? "";
             var un = Environment.GetEnvironmentVariable("USERNAME") ?? "";
             var pw = Environment.GetEnvironmentVariable("PASSWORD") ?? "";
+            var address = Environment.GetEnvironmentVariable("ADDRESS") ?? "";
+            base_path = "D:\\programming\\DD2477_Project\\PlaywrightTest\\";
 
-
-            // _client = new ElasticsearchClient(new ElasticsearchClientSettings(new Uri("https://localhost:9200"))
-                                                               // .CertificateFingerprint(fingerprint)
-                                                               // .Authentication(new BasicAuthentication(un, pw)));
-
-            
+            _client = new ElasticsearchClient(new ElasticsearchClientSettings(new Uri(address))
+                                                               .CertificateFingerprint(fingerprint)
+                                                               .Authentication(new BasicAuthentication(un, pw)));
     }
 
 
         public void IndexDocument<T>(T document, string id, string indexName) where T : class
         {
             var indexResponse = _client.Index(document, i => i.Index(indexName));
-            if (!indexResponse.IsValid)
+            if (!indexResponse.IsValidResponse)
             {
                 throw new Exception($"Failed to index document with id '{id}'");
             }
@@ -45,8 +43,7 @@ namespace ElasticSearchNamespace
         {
 
             var getResponse = _client.Get<T>(id, g => g.Index(indexName));
-            //var getResponse = _client.Get<T>(id);
-            if (!getResponse.IsValid || getResponse.Source == null)
+            if (!getResponse.IsValidResponse || getResponse.Source == null)
             {
                 throw new Exception($"Failed to retrieve document with id '{id}'");
             }
@@ -55,8 +52,7 @@ namespace ElasticSearchNamespace
 
         public void IndexAllBooks()
         {
-            // string json = File.ReadAllText("D:\\programming\\DD2477_Project\\PlaywrightTest\\books.json");
-            string json = File.ReadAllText("D:\\programming\\DD2477_Project\\PlaywrightTest\\books2.json");
+            string json = File.ReadAllText(base_path + "books2.json");
             List<SimpleBook> books = JsonConvert.DeserializeObject<List<SimpleBook>>(json);
             Console.WriteLine("Number of books: " + books.Count);
             int i = 0;
@@ -78,7 +74,7 @@ namespace ElasticSearchNamespace
 
         public void IndexAllUsers()
         {
-            string json = File.ReadAllText("D:\\programming\\DD2477_Project\\PlaywrightTest\\users.json");
+            string json = File.ReadAllText(base_path + "users.json");
             List<User> users = JsonConvert.DeserializeObject<List<User>>(json);
             Console.WriteLine("Number of user: " + users.Count);
             int i = 0;
@@ -101,13 +97,13 @@ namespace ElasticSearchNamespace
 
         public void CleanDatabase()
         {
-            string json = File.ReadAllText("C:\\Users\\chickenthug\\Desktop\\test\\PlaywrightTest\\books2.json");
+            string json = File.ReadAllText(base_path + "books2.json");
             List<SimpleBook> books = JsonConvert.DeserializeObject<List<SimpleBook>>(json);
             Dictionary<string, string> unique = new Dictionary<string, string>();
             int count = 0;
             foreach (SimpleBook book in books)
             {
-                var documentExistsResponse = _client.DocumentExists<SimpleBook>(book.id, d => d.Index("books"));
+                var documentExistsResponse = _client.Exists<SimpleBook>(book.id, d => d.Index("books"));
                 if (documentExistsResponse.Exists)
                 {
                     // Document exists in the index
@@ -131,17 +127,17 @@ namespace ElasticSearchNamespace
 
         public void CleanDatabaseEnglish()
         {
-            string json = File.ReadAllText("C:\\Users\\chickenthug\\Desktop\\test\\PlaywrightTest\\books2.json");
+            string json = File.ReadAllText(base_path + "books2.json");
             List<SimpleBook> books = JsonConvert.DeserializeObject<List<SimpleBook>>(json);
             Dictionary<string, string> unique = new Dictionary<string, string>();
             int count = 0;
             int count2 = 0;
             var factory = new RankedLanguageIdentifierFactory();
-            var identifier = factory.Load("C:\\Users\\chickenthug\\Desktop\\test\\PlaywrightTest\\Core14.profile.xml");
+            var identifier = factory.Load(base_path + "Core14.profile.xml");
             
             foreach (SimpleBook book in books)
             {
-                var documentExistsResponse = _client.DocumentExists<SimpleBook>(book.id, d => d.Index("books"));
+                var documentExistsResponse = _client.Exists<SimpleBook>(book.id, d => d.Index("books"));
                 if (book.description is null || book.description.Length < 30)
                 {
                     continue;
@@ -247,7 +243,7 @@ namespace ElasticSearchNamespace
                 )
             );
 
-            if (!searchResponse.IsValid)
+            if (!searchResponse.IsValidResponse)
             {
                 throw new Exception("Error searching for documents: " + searchResponse.DebugInformation);
             }
@@ -308,7 +304,7 @@ namespace ElasticSearchNamespace
                     )
                 );
 
-            if (!searchResponse.IsValid)
+            if (!searchResponse.IsValidResponse)
             {
                 throw new Exception("Error searching for documents: " + searchResponse.DebugInformation);
             }
@@ -331,7 +327,7 @@ namespace ElasticSearchNamespace
 
         public Dictionary<string, User> GetAllUsers2()
         {
-            string json = File.ReadAllText("C:\\Users\\chickenthug\\Desktop\\test\\PlaywrightTest\\users.json");
+            string json = File.ReadAllText(base_path + "users.json");
             List<User> users = JsonConvert.DeserializeObject<List<User>>(json);
             return users.ToDictionary(a => a.id);
 
