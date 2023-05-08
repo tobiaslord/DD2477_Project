@@ -13,8 +13,7 @@ The program uses ElasticSearch for its basic indexing, therefore you will need a
 To install the program, start by cloning the repository
 
 ```
-git clone 
-
+git clone git@github.com:tobiaslord/DD2477_Project.git
 ```
 Then go into the .env file to enter the information about your ElasticSearch instance (username, password, fingerprint and ipaddress)
 
