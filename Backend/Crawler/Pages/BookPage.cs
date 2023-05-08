@@ -2,7 +2,8 @@ using Microsoft.Playwright;
 using Models;
 
 namespace Crawler.Pages;
-class BookPage {
+class BookPage
+{
     private IPage page;
     private string bookId = string.Empty;
     // private string contextId = string.Empty;
@@ -16,13 +17,16 @@ class BookPage {
     private List<string> genres = new List<string>();
     private List<string> authors = new List<string>();
     private List<Tuple<string, int>> reviews = new List<Tuple<string, int>>();
-    public BookPage(IPage page, string id) {
+    public BookPage(IPage page, string id)
+    {
         this.page = page;
         this.bookId = id;
     }
-    public async Task SetPageData() {
+    public async Task SetPageData()
+    {
         await this.LoadPage();
-        if (await this.TrySetTitle()) {
+        if (await this.TrySetTitle())
+        {
             Task.WaitAll(new Task[] {
                 // this.SetContextId(),
                 this.SetDescription(),
@@ -36,46 +40,57 @@ class BookPage {
             });
         }
     }
-    public async Task SetReviewData() {
+    public async Task SetReviewData()
+    {
         await this.LoadPage();
-        if (await this.TrySetTitle()) {
+        if (await this.TrySetTitle())
+        {
             await this.WaitForReviews();
             await this.SetUserReviews();
         }
     }
-    public async Task<bool> IsErrorPage() {
+    public async Task<bool> IsErrorPage()
+    {
         var error = page.Locator(".leftContainer.mediumText h1");
-        if (await error.IsVisibleAsync()) {
+        if (await error.IsVisibleAsync())
+        {
             var errorText = await error.InnerTextAsync();
-            if (errorText == "page unavailable") {
+            if (errorText == "page unavailable")
+            {
                 return true;
             }
         }
         return false;
     }
-    public bool BookExists() {
+    public bool BookExists()
+    {
         return !string.IsNullOrEmpty(this.title);
     }
-    private async Task LoadPage() {
+    private async Task LoadPage()
+    {
         await page.GotoAsync($"https://www.goodreads.com/book/show/{this.bookId}");
     }
 
-    private async Task<bool> CheckIfErrorPage() {
+    private async Task<bool> CheckIfErrorPage()
+    {
         var error = page.GetByTestId("errorText");
         return await error.IsVisibleAsync();
     }
 
-    private async Task<bool> TrySetTitle() {
+    private async Task<bool> TrySetTitle()
+    {
         var stop = DateTime.Now.AddSeconds(2);
         var title = page.GetByTestId("bookTitle");
-        while (DateTime.Now < stop && !await title.IsVisibleAsync()) {
+        while (DateTime.Now < stop && !await title.IsVisibleAsync())
+        {
             var isError = await CheckIfErrorPage();
             if (isError)
                 return false;
             await Task.Delay(250);
         }
 
-        if (await title.IsVisibleAsync()) {
+        if (await title.IsVisibleAsync())
+        {
             this.title = await title.InnerTextAsync();
             return true;
         }
@@ -88,58 +103,70 @@ class BookPage {
     //     this.contextId = await div.GetAttributeAsync("data-csa-c-s_id") ?? string.Empty;
     // }
 
-    private async Task SetDescription() {
+    private async Task SetDescription()
+    {
         var description = page.GetByTestId("description").Locator(".Formatted");
         this.description = await description.InnerTextAsync();
     }
 
-    private async Task SetImageUrl() {
+    private async Task SetImageUrl()
+    {
         var image = page.Locator(".BookPage__bookCover .BookCover__image .ResponsiveImage");
         this.imageUrl = await image.GetAttributeAsync("src") ?? String.Empty;
     }
 
-    private async Task SetRating() {
+    private async Task SetRating()
+    {
         var rating = page.Locator(".BookPageMetadataSection__ratingStats .RatingStatistics__rating");
         this.rating = await rating.InnerTextAsync();
     }
 
-    private async Task SetRatingCount() {
+    private async Task SetRatingCount()
+    {
         var ratingCount = page.Locator(".BookPageMetadataSection__ratingStats").GetByTestId("ratingsCount");
         this.ratingCount = await ratingCount.InnerTextAsync();
     }
 
-    private async Task SetReviewCount() {
+    private async Task SetReviewCount()
+    {
         var reviewCount = page.Locator(".BookPageMetadataSection__ratingStats").GetByTestId("reviewsCount");
         this.reviewCount = await reviewCount.InnerTextAsync();
     }
 
-    private async Task SetAuthors() {
+    private async Task SetAuthors()
+    {
         var authors = page.Locator(".ContributorLinksList .ContributorLink__name");
         var els = await authors.ElementHandlesAsync();
-        foreach (var item in els) {
+        foreach (var item in els)
+        {
             string author = await item.InnerTextAsync();
             this.authors.Add(author);
         }
     }
 
-    private async Task SetAuthorUrls() {
+    private async Task SetAuthorUrls()
+    {
         var authors = page.Locator(".ContributorLinksList .ContributorLink");
         var els = await authors.ElementHandlesAsync();
-        foreach (var item in els) {
+        foreach (var item in els)
+        {
             string author = await item.GetAttributeAsync("href") ?? string.Empty;
             this.authorUrls.Add(author);
         }
     }
 
-    private async Task WaitForReviews() {
+    private async Task WaitForReviews()
+    {
         var profiles = page.Locator("#ReviewsSection div.ReviewsList__listContext.ReviewsList__listContext--centered");
         await profiles.InnerTextAsync();
     }
-    private async Task SetUserReviews() {
+    private async Task SetUserReviews()
+    {
         var profiles = page.Locator(".BookPage__reviewsSection .ReviewsSection .ReviewCard__profile");
         var els = await profiles.ElementHandlesAsync();
 
-        foreach (var item in els) {
+        foreach (var item in els)
+        {
             var userLink = await item.QuerySelectorAsync(".ReviewerProfile__name a");
             if (userLink == null) continue;
             var href = await userLink.GetAttributeAsync("href") ?? string.Empty;
@@ -155,7 +182,8 @@ class BookPage {
         }
     }
 
-    private async Task SetGenres() {
+    private async Task SetGenres()
+    {
         //Removed this to save time.
         // var showMoreButton = page.Locator(".BookPageMetadataSection__genres .Button__container .Button__labelItem");
         // if (await showMoreButton.IsVisibleAsync())
@@ -170,18 +198,23 @@ class BookPage {
         }
     }
 
-    public override string ToString() {
+    public override string ToString()
+    {
         return this.bookId;
     }
 
-    public SimpleBook ToSimpleBook() {
-        if (string.IsNullOrEmpty(this.title)) {
-            return new SimpleBook() {
+    public SimpleBook ToSimpleBook()
+    {
+        if (string.IsNullOrEmpty(this.title))
+        {
+            return new SimpleBook()
+            {
                 id = this.bookId,
             };
         }
 
-        return new SimpleBook() {
+        return new SimpleBook()
+        {
             id = this.bookId,
             bookId = this.bookId,
             // contextId = this.contextId,
@@ -199,9 +232,11 @@ class BookPage {
         };
     }
 
-    public List<BookReview> GetReviews() {
+    public List<BookReview> GetReviews()
+    {
         return this.reviews
-            .Select(r => new BookReview {
+            .Select(r => new BookReview
+            {
                 userId = r.Item1,
                 reviewCount = r.Item2,
             })

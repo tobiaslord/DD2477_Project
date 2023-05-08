@@ -1,6 +1,6 @@
+using Microsoft.Playwright;
 using System.Collections.Concurrent;
 using System.Configuration;
-using Microsoft.Playwright;
 
 namespace Crawler;
 public class CrawlerManager : IDisposable
@@ -13,19 +13,22 @@ public class CrawlerManager : IDisposable
     private ICrawler crawler;
     private IPlaywright? playwright;
 
-    public CrawlerManager(ICrawler crawler, int numberOfCrawlers) {
+    public CrawlerManager(ICrawler crawler, int numberOfCrawlers)
+    {
         this.ipEndpoint = ConfigurationManager.AppSettings.Get("IPEndpoint") ?? "";
         this.crawler = crawler;
         this.numberOfCrawlers = numberOfCrawlers;
     }
 
-    public async Task Setup(List<string> ids) {
+    public async Task Setup(List<string> ids)
+    {
         this.AddIdsToQueue(ids);
         await this.GetIPs();
         this.playwright = await Playwright.CreateAsync();
     }
 
-    private void AddIdsToQueue(List<string> ids) {
+    private void AddIdsToQueue(List<string> ids)
+    {
         this.idCount = ids.Count;
         foreach (var id in ids)
         {
@@ -33,13 +36,18 @@ public class CrawlerManager : IDisposable
         }
     }
 
-    private async Task GetIPs() {
+    private async Task GetIPs()
+    {
         Console.WriteLine("# Getting IPs:");
-        using (var client = new HttpClient()) {
-            using (var s = client.GetStreamAsync(this.ipEndpoint)) {
-                using (var sr = new StreamReader(await s)) {
+        using (var client = new HttpClient())
+        {
+            using (var s = client.GetStreamAsync(this.ipEndpoint))
+            {
+                using (var sr = new StreamReader(await s))
+                {
                     var line = await sr.ReadLineAsync();
-                    while (line != null) {
+                    while (line != null)
+                    {
                         var ip = line.Trim();
                         Console.WriteLine("- " + ip);
                         this._ipQueue.Enqueue(ip);
@@ -55,10 +63,12 @@ public class CrawlerManager : IDisposable
         Console.WriteLine("# Done");
     }
 
-    public async Task StartWorkers() {
+    public async Task StartWorkers()
+    {
         var watch = System.Diagnostics.Stopwatch.StartNew();
         var tasks = new Task[this.numberOfCrawlers];
-        for (int i = 0; i < this.numberOfCrawlers; i++) {
+        for (int i = 0; i < this.numberOfCrawlers; i++)
+        {
             tasks[i] = DoWork();
         }
 
@@ -66,8 +76,10 @@ public class CrawlerManager : IDisposable
         Console.WriteLine("Job took: " + watch.ElapsedMilliseconds);
         Console.WriteLine("Average processing speed: " + watch.ElapsedMilliseconds / this.idCount);
     }
-    public async Task DoWork() {
-        while (!this._idQueue.IsEmpty) {
+    public async Task DoWork()
+    {
+        while (!this._idQueue.IsEmpty)
+        {
             await using (var browser = await this.playwright.Chromium.LaunchAsync(await GetBrowserOptions()))
             {
                 var context = await browser.NewContextAsync();
@@ -78,19 +90,24 @@ public class CrawlerManager : IDisposable
         }
     }
 
-    private async Task<BrowserTypeLaunchOptions> GetBrowserOptions() {
-        if (this._ipQueue.TryDequeue(out string? ip)) {
-            return new BrowserTypeLaunchOptions() {
-                Proxy = new Proxy() {
+    private async Task<BrowserTypeLaunchOptions> GetBrowserOptions()
+    {
+        if (this._ipQueue.TryDequeue(out string? ip))
+        {
+            return new BrowserTypeLaunchOptions()
+            {
+                Proxy = new Proxy()
+                {
                     Server = ip,
                 }
             };
         }
         //If no proxy IP is available, use own IP
         await this.GetIPs();
-        return new BrowserTypeLaunchOptions() {};
+        return new BrowserTypeLaunchOptions() { };
     }
-    public void Dispose() {
+    public void Dispose()
+    {
         if (this.playwright != null)
             this.playwright.Dispose();
     }

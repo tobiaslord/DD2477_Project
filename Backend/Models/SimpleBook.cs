@@ -14,10 +14,11 @@ public class SimpleBook
     public int reviewCount { get; set; }
     public List<string> genres { get; set; }
     public List<string> authors { get; set; }
-    public List<string> authorUrls {get;set;}
+    public List<string> authorUrls { get; set; }
 }
 
-public class BookReview {
+public class BookReview
+{
     public string userId { get; set; }
     public int reviewCount { get; set; }
 }

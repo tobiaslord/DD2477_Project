@@ -1,9 +1,4 @@
-﻿using Crawler.Crawlers;
-using Crawler;
-using ElasticSearchNamespace;
-using Cosmos;
-using Models;
-using Backend;
+﻿using ElasticSearchNamespace;
 
 class Program
 {

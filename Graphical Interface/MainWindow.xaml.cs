@@ -1,26 +1,14 @@
-﻿using ElasticSearchNamespace;
-using Models;
-using Backend;
+﻿using Backend;
 using System;
-using System.Collections.Generic;
-using System.IO;
+using System.Diagnostics;
 using System.Linq;
-using System.Runtime.Intrinsics.X86;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Book = Models.SimpleBook;
-using User = Models.SimpleUser;
 using Rating = Models.Rating;
-using System.Diagnostics;
+using User = Models.SimpleUser;
 
 
 namespace Graphical_Interface
@@ -39,7 +27,7 @@ namespace Graphical_Interface
         {
             InitializeComponent();
             engine = new SearchEngine();
-            user = new User{ id = "0" };
+            user = new User { id = "0" };
         }
 
         // Event handler for the Search button in the main view
@@ -49,9 +37,9 @@ namespace Graphical_Interface
                 return;
 
             string searchTerm = SearchTextBox.Text;
-            
+
             Search(searchTerm);
-            
+
         }
 
         private int GetDisplayRating(Book b)

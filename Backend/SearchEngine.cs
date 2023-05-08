@@ -1,16 +1,7 @@
-﻿using Crawler.Crawlers;
-using ElasticSearchNamespace;
-using Microsoft.Azure.Cosmos;
-using Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ElasticSearchNamespace;
 using Book = Models.SimpleBook;
 using User = Models.SimpleUser;
 using Utils = Vectors.Vectors;
-using System.Diagnostics;
 
 namespace Backend
 {
@@ -20,7 +11,7 @@ namespace Backend
         Dictionary<string, Dictionary<string, double>> userVectors;
         Dictionary<string, User> users;
 
-        public SearchEngine() 
+        public SearchEngine()
         {
             ElasticIndex = new ElasticIndex();
             users = ElasticIndex.GetAllUsers();
@@ -47,20 +38,20 @@ namespace Backend
                 .Select(a => a.Book)
                 .Take(52)
                 .ToList();
-                
+
             }
-                
+
             Dictionary<string, double> user_vec = ElasticIndex.GetUserVector(user);
 
             if (user.ratings is not null && user.ratings.Count() > 0)
                 user_vec = ExtendUserVector(user_vec);
-            
+
             foreach (SearchResponse sbook in books)
             {
                 Book book = sbook.Book;
                 Dictionary<string, double> book_vec = ElasticIndex.GetBookVector(book.genres, 0.7);
                 double sim = Utils.CosineSimilarityEuclidian(book_vec, user_vec);
-                sbook.Score = (3*sim + sbook.Score / norm + Math.Log(book.ratingCount)/ maxRatingCount) / 5;
+                sbook.Score = (3 * sim + sbook.Score / norm + Math.Log(book.ratingCount) / maxRatingCount) / 5;
             }
 
             List<Book> s = books
@@ -68,7 +59,7 @@ namespace Backend
                 .Select(a => a.Book)
                 .Take(52)
                 .ToList();
-            
+
             return s;
         }
 
@@ -95,7 +86,7 @@ namespace Backend
                     mainUserVector[genreRating.Key] += genreRating.Value * similarUserWeights[i];
                 }
             }
-            
+
 
             return mainUserVector;
         }

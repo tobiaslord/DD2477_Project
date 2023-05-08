@@ -2,21 +2,26 @@ using Microsoft.Playwright;
 using Models;
 
 namespace Crawler.Pages;
-public class UserReviewsPage {
+public class UserReviewsPage
+{
     private IPage page;
     private string userId;
     private List<Tuple<string, int, int>> reviews = new List<Tuple<string, int, int>>();
-    public UserReviewsPage(IPage page, string userId) {
+    public UserReviewsPage(IPage page, string userId)
+    {
         this.page = page;
         this.userId = userId;
     }
-    public async Task SetPageData() {
+    public async Task SetPageData()
+    {
         await this.LoadPage();
-        if (this.ValidPage()) {
+        if (this.ValidPage())
+        {
             await this.NavigatePages();
         }
     }
-    private async Task LoadPage(int? listPage = null) {
+    private async Task LoadPage(int? listPage = null)
+    {
         string url = $"https://www.goodreads.com/review/list/{this.userId}?shelf=read&print=true";
 
         if (listPage != null)
@@ -24,13 +29,15 @@ public class UserReviewsPage {
 
         await page.GotoAsync(url);
     }
-    private bool ValidPage() {
+    private bool ValidPage()
+    {
         if (this.page.Url.Contains("/review/list/"))
             return true;
 
         return false;
     }
-    private async Task ScrollToBottom() {
+    private async Task ScrollToBottom()
+    {
         await this.page.EvaluateAsync(
             @"var intervalID = setInterval(function () {
                 var scrollingElement = (document.scrollingElement || document.body);
@@ -38,25 +45,31 @@ public class UserReviewsPage {
             }, 200);"
         );
         float prev_height = 0;
-        while (true) {
+        while (true)
+        {
             var curr_height = await this.page.EvaluateAsync<float>(@"(window.innerHeight + window.scrollY)");
-            if (prev_height == 0) {
+            if (prev_height == 0)
+            {
                 prev_height = curr_height;
                 await Task.Delay(2000);
             }
-            else if (prev_height == curr_height) {
+            else if (prev_height == curr_height)
+            {
                 await this.page.EvaluateAsync("clearInterval(intervalID)");
                 break;
             }
-            else {
+            else
+            {
                 prev_height = curr_height;
                 await Task.Delay(2000);
             }
         }
     }
-    private async Task NavigatePages() {
+    private async Task NavigatePages()
+    {
         int currentPage = 0;
-        while (true) {
+        while (true)
+        {
             currentPage++;
             await this.LoadPage(currentPage);
 
@@ -67,13 +80,15 @@ public class UserReviewsPage {
             await this.SetReviews();
         }
     }
-    private async Task SetReviews() {
+    private async Task SetReviews()
+    {
         // await this.ScrollToBottom();
 
         var reviews = this.page.Locator(".bookalike.review");
         var els = await reviews.ElementHandlesAsync();
 
-        foreach (var item in els) {
+        foreach (var item in els)
+        {
             // var review = await item.QuerySelectorAsync(".field.review .greyText");
             // if (review != null) continue; //User has not reviewed book.
 
@@ -93,11 +108,14 @@ public class UserReviewsPage {
             this.reviews.Add(new Tuple<string, int, int>(bookId, rating, totalRatings));
         }
     }
-    public SimpleUser ToSimpleUser() {
-        return new SimpleUser() {
+    public SimpleUser ToSimpleUser()
+    {
+        return new SimpleUser()
+        {
             id = this.userId,
             ratings = this.reviews
-                        .Select(r => new Rating {
+                        .Select(r => new Rating
+                        {
                             bookId = r.Item1,
                             rating = r.Item2,
                             bookRatingCount = r.Item3,

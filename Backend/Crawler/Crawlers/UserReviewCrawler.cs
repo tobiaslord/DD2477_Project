@@ -1,8 +1,8 @@
-using System.Collections.Concurrent;
-using Crawler.Pages;
-using Models;
 using Cosmos;
+using Crawler.Pages;
 using Microsoft.Playwright;
+using Models;
+using System.Collections.Concurrent;
 
 namespace Crawler.Crawlers;
 public class UserReviewCrawler : ICrawler
@@ -17,16 +17,20 @@ public class UserReviewCrawler : ICrawler
         //4. Load user reviews until ~100 reviews
         //5. For each user, save user id and list of (score, bookId)
         var page = await context.NewPageAsync();
-        using (var db = CosmosDBFactory.GetDB<SimpleUser>(CosmosCollection.Users)) {
+        using (var db = CosmosDBFactory.GetDB<SimpleUser>(CosmosCollection.Users))
+        {
             await GetBookReviews(queue, db, page);
         }
     }
-    private async Task GetBookReviews(ConcurrentQueue<string> queue, CosmosDB<SimpleUser> db, IPage page) {
-        while (queue.TryDequeue(out string? bookId)) {
+    private async Task GetBookReviews(ConcurrentQueue<string> queue, CosmosDB<SimpleUser> db, IPage page)
+    {
+        while (queue.TryDequeue(out string? bookId))
+        {
             tracker.PrintStatus(queue, 10);
             this.tracker.OnRequest();
 
-            try {
+            try
+            {
                 var bookPage = new BookPage(page, bookId);
                 await bookPage.SetReviewData();
                 var reviews = bookPage.GetReviews();
@@ -37,7 +41,8 @@ public class UserReviewCrawler : ICrawler
                 await GetUserReviews(db, page, reviews);
                 Console.WriteLine("##bookId##" + bookId);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Console.WriteLine("Error! Last bookId: " + bookId);
                 Console.WriteLine(ex.Message);
 
@@ -48,19 +53,24 @@ public class UserReviewCrawler : ICrawler
         }
     }
 
-    private async Task GetUserReviews(CosmosDB<SimpleUser> db, IPage page, List<BookReview> reviews) {
+    private async Task GetUserReviews(CosmosDB<SimpleUser> db, IPage page, List<BookReview> reviews)
+    {
         int addedBooks = 0;
         int idx = 0;
-        while (addedBooks < 100 && reviews.Count > idx) {
+        while (addedBooks < 100 && reviews.Count > idx)
+        {
             var review = reviews.ElementAt(idx);
             idx++;
-            if (addedBooks > 0 && (review.reviewCount + addedBooks) > 200) {
+            if (addedBooks > 0 && (review.reviewCount + addedBooks) > 200)
+            {
                 break;
             }
 
-            try {
+            try
+            {
                 var existingUser = await db.GetDocument(review.userId);
-                if (existingUser != null) {
+                if (existingUser != null)
+                {
                     continue;
                 }
 
@@ -73,7 +83,8 @@ public class UserReviewCrawler : ICrawler
 
                 user.ratings = user.ratings.Where(r => r.rating > 0).ToList();
 
-                if (user.ratings.Count != review.reviewCount) {
+                if (user.ratings.Count != review.reviewCount)
+                {
                     Console.WriteLine("Should be equal!, userId: " + review.userId);
                 }
 
@@ -81,7 +92,8 @@ public class UserReviewCrawler : ICrawler
                 Console.WriteLine("Added " + user.ratings.Count + " ratings");
                 addedBooks += user.ratings.Count;
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 Console.WriteLine("Error GetUserReviews! Last userId: " + review.userId);
                 Console.WriteLine(ex.Message);
             }

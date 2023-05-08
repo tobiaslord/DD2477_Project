@@ -1,16 +1,13 @@
-using Newtonsoft.Json;
-using Models;
-using Nest;
+using Backend;
 using Elastic.Clients.Elasticsearch;
 using Elastic.Transport;
-using Utils = Vectors.Vectors;
-using User = Models.SimpleUser;
-using BookRating = Models.Rating;
-using System.Diagnostics;
-using Elastic.Clients.Elasticsearch.Core.MGet;
-using System.Text.Json;
+using Models;
+using Newtonsoft.Json;
 using NTextCat;
-using Backend;
+using System.Diagnostics;
+using System.Reflection;
+using BookRating = Models.Rating;
+using User = Models.SimpleUser;
 
 namespace ElasticSearchNamespace
 {
@@ -20,20 +17,19 @@ namespace ElasticSearchNamespace
         ElasticsearchClient _client;
         public ElasticIndex()
         {
-            var root = Directory.GetCurrentDirectory();
-            var dotenv = System.IO.Path.Combine(root, ".env");
+            base_path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var dotenv = System.IO.Path.Combine(base_path, ".env");
             DotEnv.Load(dotenv);
 
             var fingerprint = Environment.GetEnvironmentVariable("FINGERPRINT") ?? "";
             var un = Environment.GetEnvironmentVariable("USERNAME") ?? "";
             var pw = Environment.GetEnvironmentVariable("PASSWORD") ?? "";
             var address = Environment.GetEnvironmentVariable("ADDRESS") ?? "";
-            base_path = Directory.GetCurrentDirectory();
 
             _client = new ElasticsearchClient(new ElasticsearchClientSettings(new Uri(address))
                                                                .CertificateFingerprint(fingerprint)
                                                                .Authentication(new BasicAuthentication(un, pw)));
-    }
+        }
 
 
         public void IndexDocument<T>(T document, string id, string indexName) where T : class
@@ -87,7 +83,7 @@ namespace ElasticSearchNamespace
             foreach (User user in users)
             {
                 List<BookRating> ratings = user.ratings;
-                
+
                 if (ratings is null || ratings.Count == 0) // Skip users without ratings
                 {
                     continue;
@@ -140,7 +136,7 @@ namespace ElasticSearchNamespace
             int count2 = 0;
             var factory = new RankedLanguageIdentifierFactory();
             var identifier = factory.Load(Path.Combine(base_path, "Core14.profile.xml"));
-            
+
             foreach (SimpleBook book in books)
             {
                 var documentExistsResponse = _client.Exists<SimpleBook>(book.id, d => d.Index("books"));
@@ -181,12 +177,12 @@ namespace ElasticSearchNamespace
             {
                 if (br.bookId is null || br.bookId == "")
                     continue;
-                
+
                 try
                 {
                     List<string> genres = GetDocument<SimpleBook>(br.bookId, "books").genres;
                     Dictionary<string, double> book_rep = GetBookVector(genres, 0.8);
-                    
+
                     foreach (string genre in book_rep.Keys)
                     {
                         if (!user_rep.ContainsKey(genre))
@@ -195,7 +191,7 @@ namespace ElasticSearchNamespace
                         }
                         user_rep[genre] += book_rep[genre] * (br.rating - 2.5f);
                     }
-                } 
+                }
                 catch (Exception ex)
                 {
                     Debug.WriteLine("Rated book not found: " + br.bookId);
@@ -210,7 +206,7 @@ namespace ElasticSearchNamespace
         {
             Dictionary<string, double> vector_rep = new Dictionary<string, double>();
             double length = 0;
-            for (int i=0; i<genres.Count; i++)
+            for (int i = 0; i < genres.Count; i++)
             {
                 double weight = Math.Pow(decayFactor, i);
                 vector_rep.Add(genres[i], weight);
@@ -315,8 +311,8 @@ namespace ElasticSearchNamespace
                 throw new Exception("Error searching for documents: " + searchResponse.DebugInformation);
             }
 
-            var documentsWithScores = searchResponse.Hits.Select(hit => new SearchResponse{ Score = hit.Score, Book = hit.Source }).ToList();
-       
+            var documentsWithScores = searchResponse.Hits.Select(hit => new SearchResponse { Score = hit.Score, Book = hit.Source }).ToList();
+
 
             return documentsWithScores;
         }
@@ -344,7 +340,7 @@ namespace ElasticSearchNamespace
 
     }
 
-    
+
 
     public class SearchResponse
     {
