@@ -8,7 +8,7 @@ A Seach engine that uses your feedback to find better books for you to read.
 
 # Installation
 
-The program uses ElasticSearch for its basic indexing, therefore you will need an empty instance of Elastic Search to install the system.  
+The program uses ElasticSearch for its basic indexing, therefore you will need an empty instance of Elastic Search to install the system. If you do not already have an instance set up, we recommend using a docker container as explained in this [guide](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html) (start a single-node cluster with Docker).
 
 To install the program, start by cloning the repository
 
